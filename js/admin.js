@@ -1,93 +1,238 @@
-// Database management class
+// فئة إدارة قاعدة البيانات
 class AdminDatabase {
     constructor() {
-        this.users = JSON.parse(localStorage.getItem('users') || '[]');
-        this.settings = JSON.parse(localStorage.getItem('settings') || '{}');
-        
-        // Initialize default admin user if not exists
+        this.loadData();
+    }
+    
+    loadData() {
+        try {
+            // تحميل البيانات من localStorage
+            this.users = JSON.parse(localStorage.getItem('municipality_users') || '[]');
+            this.news = JSON.parse(localStorage.getItem('municipality_news') || '[]');
+            this.projects = JSON.parse(localStorage.getItem('municipality_projects') || '[]');
+            this.services = JSON.parse(localStorage.getItem('municipality_services') || '[]');
+            this.settings = JSON.parse(localStorage.getItem('municipality_settings') || '{}');
+            
+            // تهيئة البيانات الافتراضية
+            this.initializeDefaultData();
+        } catch (error) {
+            console.error('Error loading data:', error);
+            this.initializeDefaultData();
+        }
+    }
+    
+    initializeDefaultData() {
+        // تهيئة المستخدمين الافتراضيين
         if (this.users.length === 0) {
-            this.users.push({
+            this.users = [{
                 id: 1,
                 username: 'admin',
                 email: 'admin@mun.gov.sa',
                 password: 'admin123',
-                role: 'admin'
-            });
+                role: 'admin',
+                active: true
+            }];
             this.saveUsers();
         }
         
-        // Initialize default settings if not exists
+        // تهيئة الأخبار الافتراضية
+        if (this.news.length === 0) {
+            this.news = [
+                {
+                    id: 1,
+                    title: "إعلان عن مسابقة توظيف",
+                    summary: "تعلم بلدية المدينة عن فتح باب التسجيل في مسابقة توظيف لعدة مناصب إدارية وفنية",
+                    content: "تعلم بلدية المدينة عن فتح باب التسجيل في مسابقة توظيف لعدة مناصب إدارية وفنية. يرجى من الشركات المهنية المهتمة تقديم عروضها في الموعد المحدد.",
+                    date: "2023-05-20",
+                    status: "published",
+                    image: "https://via.placeholder.com/400x200"
+                },
+                {
+                    id: 2,
+                    title: "افتتاح مشروع الحديقة العامة",
+                    summary: "تم افتتاح مشروع الحديقة العامة الجديدة في حي النخيل بعد اكتمال جميع الأعمال",
+                    content: "تم افتتاح مشروع الحديقة العامة الجديدة في حي النخيل بعد اكتمال جميع الأعمال. تشمل الحديقة مساحات خضراء وملاعب أطفال ومسارات للمشي والجري.",
+                    date: "2023-05-18",
+                    status: "published",
+                    image: "https://via.placeholder.com/400x200"
+                }
+            ];
+            this.saveNews();
+        }
+        
+        // تهيئة المشاريع الافتراضية
+        if (this.projects.length === 0) {
+            this.projects = [
+                {
+                    id: 1,
+                    name: "مشروع تجديد شارع الملك عبدالله",
+                    description: "تجديد كامل لشارع الملك عبدالله بما في ذلك رصف الطريق وإنارة الشوارع",
+                    progress: 100,
+                    status: "completed",
+                    cost: "5 ملايين ريال"
+                },
+                {
+                    id: 2,
+                    name: "مشروع توسعة المستشفى العام",
+                    description: "إضافة جناح جديد للمستشفى بسعة 100 سرير وتجهيزه بأحدث المعدات الطبية",
+                    progress: 65,
+                    status: "ongoing",
+                    cost: "25 مليون ريال"
+                }
+            ];
+            this.saveProjects();
+        }
+        
+        // تهيئة الخدمات الافتراضية
+        if (this.services.length === 0) {
+            this.services = [
+                {
+                    id: 1,
+                    name: "وثائق شخصية",
+                    description: "استخراج شهادات الميلاد، الوفاة، الزواج، والبطاقة الشخصية",
+                    category: "documents",
+                    icon: "fas fa-id-card"
+                },
+                {
+                    id: 2,
+                    name: "خدمات عقارية",
+                    description: "استخراج وثائق الملكية، صكوك العقار، ورخص البناء",
+                    category: "properties",
+                    icon: "fas fa-home"
+                }
+            ];
+            this.saveServices();
+        }
+        
+        // تهيئة الإعدادات الافتراضية
         if (!this.settings.siteName) {
             this.settings = {
                 siteName: 'بلدية المدينة',
                 adminEmail: 'admin@mun.gov.sa',
+                contactPhone: '0123456789',
                 primaryColor: '#1a5276'
             };
             this.saveSettings();
         }
     }
-
-    // Users management
+    
+    // إدارة المستخدمين
     getUsers() {
         return this.users;
     }
-
+    
     addUser(user) {
         user.id = Date.now();
+        user.active = user.active !== false;
         this.users.push(user);
         this.saveUsers();
     }
-
+    
     deleteUser(id) {
         this.users = this.users.filter(user => user.id !== id);
         this.saveUsers();
     }
-
+    
     saveUsers() {
-        localStorage.setItem('users', JSON.stringify(this.users));
+        localStorage.setItem('municipality_users', JSON.stringify(this.users));
     }
-
-    // Settings management
+    
+    // إدارة الأخبار
+    getNews() {
+        return this.news;
+    }
+    
+    addNews(news) {
+        news.id = Date.now();
+        news.date = new Date().toISOString().split('T')[0];
+        this.news.unshift(news);
+        this.saveNews();
+    }
+    
+    deleteNews(id) {
+        this.news = this.news.filter(news => news.id !== id);
+        this.saveNews();
+    }
+    
+    saveNews() {
+        localStorage.setItem('municipality_news', JSON.stringify(this.news));
+    }
+    
+    // إدارة المشاريع
+    getProjects() {
+        return this.projects;
+    }
+    
+    addProject(project) {
+        project.id = Date.now();
+        this.projects.unshift(project);
+        this.saveProjects();
+    }
+    
+    deleteProject(id) {
+        this.projects = this.projects.filter(project => project.id !== id);
+        this.saveProjects();
+    }
+    
+    saveProjects() {
+        localStorage.setItem('municipality_projects', JSON.stringify(this.projects));
+    }
+    
+    // إدارة الخدمات
+    getServices() {
+        return this.services;
+    }
+    
+    addService(service) {
+        service.id = Date.now();
+        this.services.unshift(service);
+        this.saveServices();
+    }
+    
+    deleteService(id) {
+        this.services = this.services.filter(service => service.id !== id);
+        this.saveServices();
+    }
+    
+    saveServices() {
+        localStorage.setItem('municipality_services', JSON.stringify(this.services));
+    }
+    
+    // إدارة الإعدادات
     getSettings() {
         return this.settings;
     }
-
+    
     updateSettings(settings) {
         this.settings = { ...this.settings, ...settings };
         this.saveSettings();
     }
-
+    
     saveSettings() {
-        localStorage.setItem('settings', JSON.stringify(this.settings));
+        localStorage.setItem('municipality_settings', JSON.stringify(this.settings));
     }
-
-    // Authentication
+    
+    // المصادقة
     authenticate(username, password) {
         return this.users.find(user => 
-            user.username === username && user.password === password
+            user.username === username && 
+            user.password === password && 
+            user.active
         );
     }
 }
 
-// Initialize admin database
+// تهيئة قاعدة بيانات المشرف
 const adminDb = new AdminDatabase();
 
-// DOM Elements
+// عناصر DOM
 const loginForm = document.getElementById('loginForm');
 const loginPage = document.getElementById('loginPage');
 const dashboard = document.getElementById('dashboard');
 const logoutBtn = document.getElementById('logoutBtn');
 const sidebarLinks = document.querySelectorAll('.sidebar-menu a[data-page]');
-const contentSections = {
-    'dashboard': 'dashboardContent',
-    'news': 'newsContent',
-    'projects': 'projectsContent',
-    'services': 'servicesContent',
-    'users': 'usersContent',
-    'settings': 'settingsContent'
-};
 
-// Login functionality
+// وظيفة تسجيل الدخول
 if (loginForm) {
     loginForm.addEventListener('submit', function(e) {
         e.preventDefault();
@@ -98,103 +243,83 @@ if (loginForm) {
         const user = adminDb.authenticate(username, password);
         
         if (user) {
-            // Hide login page and show dashboard
+            // إخفاء صفحة تسجيل الدخول وإظهار لوحة التحكم
             loginPage.style.display = 'none';
             dashboard.style.display = 'flex';
             
-            // Load dashboard data
-            loadDashboardStats();
-            loadRecentNews();
+            // تحميل بيانات لوحة التحكم
+            loadDashboardData();
         } else {
-            alert('اسم المستخدم أو كلمة المرور غير صحيحة');
+            showMessage('اسم المستخدم أو كلمة المرور غير صحيحة', 'error');
         }
     });
 }
 
-// Logout functionality
+// وظيفة تسجيل الخروج
 if (logoutBtn) {
     logoutBtn.addEventListener('click', function(e) {
         e.preventDefault();
         
-        // Show login page and hide dashboard
+        // إظهار صفحة تسجيل الدخول وإخفاء لوحة التحكم
         dashboard.style.display = 'none';
         loginPage.style.display = 'flex';
         
-        // Reset form
+        // إعادة تعيين النموذج
         if (loginForm) {
             loginForm.reset();
         }
     });
 }
 
-// Sidebar navigation
+// التنقل في الشريط الجانبي
 sidebarLinks.forEach(link => {
     link.addEventListener('click', function(e) {
         e.preventDefault();
         
-        // Remove active class from all links
+        // إزالة الفئة النشطة من جميع الروابط
         sidebarLinks.forEach(l => l.classList.remove('active'));
         
-        // Add active class to clicked link
+        // إضافة الفئة النشطة للرابط المضغوط
         this.classList.add('active');
         
-        // Hide all content sections
-        Object.values(contentSections).forEach(sectionId => {
-            const section = document.getElementById(sectionId);
-            if (section) {
-                section.style.display = 'none';
-            }
+        // إخفاء جميع أقسام المحتوى
+        document.querySelectorAll('[id$="Content"]').forEach(section => {
+            if (section) section.style.display = 'none';
         });
         
-        // Show selected content section
+        // إظهار قسم المحتوى المحدد
         const page = this.getAttribute('data-page');
-        if (contentSections[page]) {
-            const section = document.getElementById(contentSections[page]);
-            if (section) {
-                section.style.display = 'block';
-                
-                // Load section-specific data
-                if (page === 'news') {
-                    loadNewsTable();
-                } else if (page === 'projects') {
-                    loadProjectsTable();
-                } else if (page === 'services') {
-                    loadServicesTable();
-                } else if (page === 'users') {
-                    loadUsersTable();
-                }
-            }
+        const section = document.getElementById(page + 'Content');
+        if (section) {
+            section.style.display = 'block';
+            loadSectionData(page);
         }
     });
 });
 
-// Mobile menu toggle
-const menuToggle = document.querySelector('.menu-toggle');
-if (menuToggle) {
-    menuToggle.addEventListener('click', function() {
-        document.querySelector('.sidebar').classList.toggle('active');
-    });
-}
-
-// Load dashboard statistics
-function loadDashboardStats() {
-    const db = new Database();
+// تحميل بيانات لوحة التحكم
+function loadDashboardData() {
+    // تحديث الأعداد
+    const newsCount = document.getElementById('newsCount');
+    const projectsCount = document.getElementById('projectsCount');
+    const servicesCount = document.getElementById('servicesCount');
+    const usersCount = document.getElementById('usersCount');
     
-    // Update counts
-    document.getElementById('newsCount').textContent = db.getNews().length;
-    document.getElementById('projectsCount').textContent = db.getProjects().length;
-    document.getElementById('servicesCount').textContent = db.getServices().length;
-    document.getElementById('usersCount').textContent = adminDb.getUsers().length;
+    if (newsCount) newsCount.textContent = adminDb.getNews().length;
+    if (projectsCount) projectsCount.textContent = adminDb.getProjects().length;
+    if (servicesCount) servicesCount.textContent = adminDb.getServices().length;
+    if (usersCount) usersCount.textContent = adminDb.getUsers().length;
+    
+    // تحميل آخر الأخبار في لوحة التحكم
+    loadRecentNews();
 }
 
-// Load recent news for dashboard
+// تحميل آخر الأخبار للوحة التحكم
 function loadRecentNews() {
-    const db = new Database();
-    const news = db.getNews().slice(0, 3);
-    const container = document.getElementById('recentNews');
-    
-    if (container) {
-        container.innerHTML = news.map(item => `
+    const recentNews = document.getElementById('recentNews');
+    if (recentNews) {
+        const news = adminDb.getNews().slice(0, 3);
+        recentNews.innerHTML = news.map(item => `
             <div class="recent-news-item">
                 <h4>${item.title}</h4>
                 <p>${item.summary}</p>
@@ -204,16 +329,34 @@ function loadRecentNews() {
     }
 }
 
-// Load news table
-function loadNewsTable() {
-    const db = new Database();
-    const news = db.getNews();
+// تحميل بيانات القسم المحدد
+function loadSectionData(page) {
+    switch(page) {
+        case 'news':
+            loadNewsData();
+            break;
+        case 'projects':
+            loadProjectsData();
+            break;
+        case 'services':
+            loadServicesData();
+            break;
+        case 'users':
+            loadUsersData();
+            break;
+    }
+}
+
+// تحميل بيانات الأخبار
+function loadNewsData() {
+    const news = adminDb.getNews();
     const tbody = document.getElementById('newsTableBody');
     
     if (tbody) {
         tbody.innerHTML = news.map(item => `
             <tr>
                 <td>${item.title}</td>
+                <td>${item.summary.substring(0, 50)}...</td>
                 <td>${item.date}</td>
                 <td>
                     <span style="color: ${item.status === 'published' ? 'var(--success-color)' : 'var(--warning-color)'};">
@@ -229,10 +372,9 @@ function loadNewsTable() {
     }
 }
 
-// Load projects table
-function loadProjectsTable() {
-    const db = new Database();
-    const projects = db.getProjects();
+// تحميل بيانات المشاريع
+function loadProjectsData() {
+    const projects = adminDb.getProjects();
     const tbody = document.getElementById('projectsTableBody');
     
     if (tbody) {
@@ -246,7 +388,8 @@ function loadProjectsTable() {
             return `
                 <tr>
                     <td>${project.name}</td>
-                    <td>${project.progress}%</td>
+                    <td>${project.description ? project.description.substring(0, 50) + '...' : ''}</td>
+                    <td>${project.progress || 0}%</td>
                     <td>
                         <span style="color: ${
                             project.status === 'completed' ? 'var(--success-color)' : 
@@ -266,10 +409,9 @@ function loadProjectsTable() {
     }
 }
 
-// Load services table
-function loadServicesTable() {
-    const db = new Database();
-    const services = db.getServices();
+// تحميل بيانات الخدمات
+function loadServicesData() {
+    const services = adminDb.getServices();
     const tbody = document.getElementById('servicesTableBody');
     
     if (tbody) {
@@ -284,6 +426,7 @@ function loadServicesTable() {
             return `
                 <tr>
                     <td>${service.name}</td>
+                    <td>${service.description ? service.description.substring(0, 50) + '...' : ''}</td>
                     <td>${categoryText}</td>
                     <td class="actions">
                         <a href="#" onclick="editService(${service.id})"><i class="fas fa-edit"></i></a>
@@ -295,8 +438,8 @@ function loadServicesTable() {
     }
 }
 
-// Load users table
-function loadUsersTable() {
+// تحميل بيانات المستخدمين
+function loadUsersData() {
     const users = adminDb.getUsers();
     const tbody = document.getElementById('usersTableBody');
     
@@ -313,6 +456,11 @@ function loadUsersTable() {
                     <td>${user.username}</td>
                     <td>${user.email}</td>
                     <td>${roleText}</td>
+                    <td>
+                        <span style="color: ${user.active ? 'var(--success-color)' : 'var(--warning-color)'};">
+                            ${user.active ? 'نشط' : 'معطل'}
+                        </span>
+                    </td>
                     <td class="actions">
                         <a href="#" onclick="editUser(${user.id})"><i class="fas fa-edit"></i></a>
                         <a href="#" class="delete" onclick="deleteUser(${user.id})"><i class="fas fa-trash"></i></a>
@@ -323,7 +471,7 @@ function loadUsersTable() {
     }
 }
 
-// Modal management
+// إدارة النوافذ المنبثقة
 const modals = {
     'addNewsModal': {
         trigger: 'addNewsBtn',
@@ -351,14 +499,14 @@ const modals = {
     }
 };
 
-// Setup modals
+// إعداد النوافذ المنبثقة
 Object.keys(modals).forEach(modalId => {
     const modal = document.getElementById(modalId);
     const config = modals[modalId];
     
     if (!modal) return;
     
-    // Open modal
+    // فتح النافذة
     if (config.trigger) {
         const triggerBtn = document.getElementById(config.trigger);
         if (triggerBtn) {
@@ -368,7 +516,7 @@ Object.keys(modals).forEach(modalId => {
         }
     }
     
-    // Close modal
+    // إغلاق النافذة
     const closeBtns = modal.querySelectorAll('.modal-close, .' + config.cancel);
     closeBtns.forEach(btn => {
         btn.addEventListener('click', function() {
@@ -380,7 +528,7 @@ Object.keys(modals).forEach(modalId => {
         });
     });
     
-    // Save modal
+    // حفظ النافذة
     if (config.save) {
         const saveBtn = document.getElementById(config.save);
         if (saveBtn) {
@@ -399,7 +547,7 @@ Object.keys(modals).forEach(modalId => {
         }
     }
     
-    // Close modal when clicking outside
+    // إغلاق النافذة عند النقر خارجها
     window.addEventListener('click', function(e) {
         if (e.target === modal) {
             modal.style.display = 'none';
@@ -411,22 +559,21 @@ Object.keys(modals).forEach(modalId => {
     });
 });
 
-// Handle modal save actions
+// التعامل مع حفظ النوافذ المنبثقة
 function handleModalSave(modalId, form) {
-    const formData = new FormData(form);
-    
     switch(modalId) {
         case 'addNewsModal':
             const news = {
                 title: document.getElementById('newsTitle').value,
                 summary: document.getElementById('newsSummary').value,
-                status: document.getElementById('newsStatus').value
+                content: document.getElementById('newsContent').value,
+                status: document.getElementById('newsStatus').value,
+                image: 'https://via.placeholder.com/400x200'
             };
-            const db = new Database();
-            db.addNews(news);
-            loadNewsTable();
-            loadDashboardStats();
-            alert('تمت إضافة الخبر بنجاح!');
+            adminDb.addNews(news);
+            loadNewsData();
+            loadDashboardData();
+            showMessage('تمت إضافة الخبر بنجاح!', 'success');
             break;
             
         case 'addProjectModal':
@@ -435,13 +582,12 @@ function handleModalSave(modalId, form) {
                 description: document.getElementById('projectDescription').value,
                 progress: parseInt(document.getElementById('projectProgress').value),
                 status: document.getElementById('projectStatus').value,
-                cost: 'محدد لاحقاً'
+                cost: document.getElementById('projectCost').value
             };
-            const db2 = new Database();
-            db2.addProject(project);
-            loadProjectsTable();
-            loadDashboardStats();
-            alert('تمت إضافة المشروع بنجاح!');
+            adminDb.addProject(project);
+            loadProjectsData();
+            loadDashboardData();
+            showMessage('تمت إضافة المشروع بنجاح!', 'success');
             break;
             
         case 'addServiceModal':
@@ -449,13 +595,12 @@ function handleModalSave(modalId, form) {
                 name: document.getElementById('serviceName').value,
                 description: document.getElementById('serviceDescription').value,
                 category: document.getElementById('serviceCategory').value,
-                icon: 'fas fa-cogs'
+                icon: document.getElementById('serviceIcon').value
             };
-            const db3 = new Database();
-            db3.addService(service);
-            loadServicesTable();
-            loadDashboardStats();
-            alert('تمت إضافة الخدمة بنجاح!');
+            adminDb.addService(service);
+            loadServicesData();
+            loadDashboardData();
+            showMessage('تمت إضافة الخدمة بنجاح!', 'success');
             break;
             
         case 'addUserModal':
@@ -463,65 +608,140 @@ function handleModalSave(modalId, form) {
                 username: document.getElementById('userName').value,
                 email: document.getElementById('userEmail').value,
                 password: document.getElementById('userPassword').value,
-                role: document.getElementById('userRole').value
+                role: document.getElementById('userRole').value,
+                active: document.getElementById('userActive').checked
             };
             adminDb.addUser(user);
-            loadUsersTable();
-            loadDashboardStats();
-            alert('تمت إضافة المستخدم بنجاح!');
+            loadUsersData();
+            loadDashboardData();
+            showMessage('تمت إضافة المستخدم بنجاح!', 'success');
             break;
     }
 }
 
-// Delete functions
+// وظائف الحذف
 function deleteNews(id) {
     if (confirm('هل أنت متأكد من حذف هذا الخبر؟')) {
-        const db = new Database();
-        db.deleteNews(id);
-        loadNewsTable();
-        loadDashboardStats();
+        adminDb.deleteNews(id);
+        loadNewsData();
+        loadDashboardData();
+        showMessage('تم حذف الخبر بنجاح', 'success');
     }
 }
 
 function deleteProject(id) {
     if (confirm('هل أنت متأكد من حذف هذا المشروع؟')) {
-        const db = new Database();
-        db.deleteProject(id);
-        loadProjectsTable();
-        loadDashboardStats();
+        adminDb.deleteProject(id);
+        loadProjectsData();
+        loadDashboardData();
+        showMessage('تم حذف المشروع بنجاح', 'success');
     }
 }
 
 function deleteService(id) {
     if (confirm('هل أنت متأكد من حذف هذه الخدمة؟')) {
-        const db = new Database();
-        db.deleteService(id);
-        loadServicesTable();
-        loadDashboardStats();
+        adminDb.deleteService(id);
+        loadServicesData();
+        loadDashboardData();
+        showMessage('تم حذف الخدمة بنجاح', 'success');
     }
 }
 
 function deleteUser(id) {
     if (confirm('هل أنت متأكد من حذف هذا المستخدم؟')) {
         adminDb.deleteUser(id);
-        loadUsersTable();
-        loadDashboardStats();
+        loadUsersData();
+        loadDashboardData();
+        showMessage('تم حذف المستخدم بنجاح', 'success');
     }
 }
 
-// Settings tabs
+// وظيفة عرض الرسائل
+function showMessage(message, type = 'info') {
+    const messageDiv = document.createElement('div');
+    messageDiv.style.cssText = `
+        position: fixed;
+        top: 20px;
+        right: 20px;
+        padding: 15px 20px;
+        border-radius: 5px;
+        color: white;
+        font-weight: 500;
+        z-index: 3000;
+        animation: slideIn 0.3s ease;
+        background-color: ${type === 'success' ? 'var(--success-color)' : 
+                          type === 'error' ? 'var(--accent-color)' : 
+                          'var(--secondary-color)'};
+    `;
+    messageDiv.textContent = message;
+    
+    document.body.appendChild(messageDiv);
+    
+    setTimeout(() => {
+        messageDiv.style.animation = 'slideOut 0.3s ease';
+        setTimeout(() => {
+            messageDiv.remove();
+        }, 300);
+    }, 3000);
+}
+
+// إضافة أنيميشن للرسائل
+const style = document.createElement('style');
+style.textContent = `
+    @keyframes slideIn {
+        from {
+            transform: translateX(100%);
+            opacity: 0;
+        }
+        to {
+            transform: translateX(0);
+            opacity: 1;
+        }
+    }
+    
+    @keyframes slideOut {
+        from {
+            transform: translateX(0);
+            opacity: 1;
+        }
+        to {
+            transform: translateX(100%);
+            opacity: 0;
+        }
+    }
+`;
+document.head.appendChild(style);
+
+// وظائف التحرير (نماذج مؤقتة)
+function editNews(id) {
+    showMessage('تحرير الخبر سيكون متاحاً في الإصدار القادم', 'info');
+}
+
+function editProject(id) {
+    showMessage('تحرير المشروع سيكون متاحاً في الإصدار القادم', 'info');
+}
+
+function editService(id) {
+    showMessage('تحرير الخدمة سيكون متاحاً في الإصدار القادم', 'info');
+}
+
+function editUser(id) {
+    showMessage('تحرير المستخدم سيكون متاحاً في الإصدار القادم', 'info');
+}
+
+// تبويبات الإعدادات
 const settingsTabs = document.querySelectorAll('.settings-tab');
 if (settingsTabs) {
     settingsTabs.forEach(tab => {
         tab.addEventListener('click', function() {
-            // Remove active class from all tabs and contents
+            // إزالة الفئة النشطة من جميع التبويبات والمحتويات
             settingsTabs.forEach(t => t.classList.remove('active'));
             document.querySelectorAll('.settings-content').forEach(c => c.classList.remove('active'));
             
-            // Add active class to clicked tab
+            // إضافة الفئة النشطة للتبويب المضغوط
             this.classList.add('active');
             
-            // Show corresponding content
+            // إظهار المحتوى المقابل
             const tabId = this.getAttribute('data-tab');
             const content = document.getElementById(tabId + 'Settings');
             if (content) {
@@ -531,7 +751,7 @@ if (settingsTabs) {
     });
 }
 
-// Settings forms
+// نماذج الإعدادات
 const generalSettingsForm = document.getElementById('generalSettingsForm');
 if (generalSettingsForm) {
     generalSettingsForm.addEventListener('submit', function(e) {
@@ -539,11 +759,12 @@ if (generalSettingsForm) {
         
         const settings = {
             siteName: document.getElementById('siteName').value,
-            adminEmail: document.getElementById('adminEmail').value
+            adminEmail: document.getElementById('adminEmail').value,
+            contactPhone: document.getElementById('contactPhone').value
         };
         
         adminDb.updateSettings(settings);
-        alert('تم حفظ الإعدادات بنجاح!');
+        showMessage('تم حفظ الإعدادات بنجاح!', 'success');
     });
 }
 
@@ -555,16 +776,16 @@ if (appearanceSettingsForm) {
         const selectedColor = document.querySelector('.color-option.selected');
         if (selectedColor) {
             const settings = {
-                primaryColor: selectedColor.getAttribute('data-color')
+                primaryColor: selectedColor.style.backgroundColor
             };
             
             adminDb.updateSettings(settings);
-            alert('تم حفظ الإعدادات بنجاح!');
+            showMessage('تم حفظ الإعدادات بنجاح!', 'success');
         }
     });
 }
 
-// Color picker
+// منتقي الألوان
 const colorOptions = document.querySelectorAll('.color-option');
 colorOptions.forEach(option => {
     option.addEventListener('click', function() {
@@ -573,19 +794,86 @@ colorOptions.forEach(option => {
     });
 });
 
-// Edit functions (placeholders)
-function editNews(id) {
-    alert('تحرير الخبر سيكون متاحاً في الإصدار القادم');
+// تبديل القائمة للموبايل
+const menuToggle = document.querySelector('.menu-toggle');
+if (menuToggle) {
+    menuToggle.addEventListener('click', function() {
+        document.querySelector('.sidebar').classList.toggle('active');
+    });
 }
 
-function editProject(id) {
-    alert('تحرير المشروع سيكون متاحاً في الإصدار القادم');
+// التحقق من صلاحيات المسؤول عند تحميل الصفحة
+document.addEventListener('DOMContentLoaded', function() {
+    // التحقق من وجود صفحة تسجيل الدخول ولوحة التحكم
+    if (loginPage && dashboard) {
+        // إخفاء لوحة التحكم بشكل افتراضي
+        dashboard.style.display = 'none';
+        
+        // التحقق من وجود جلسة نشطة (يمكن إضافتها لاحقاً)
+        const isLoggedIn = localStorage.getItem('adminLoggedIn');
+        if (isLoggedIn === 'true') {
+            loginPage.style.display = 'none';
+            dashboard.style.display = 'flex';
+            loadDashboardData();
+        }
+    }
+});
+
+// إضافة دعم للوحة المفاتيح
+document.addEventListener('keydown', function(e) {
+    // ESC لإغلاق النوافذ المنبثقة
+    if (e.key === 'Escape') {
+        document.querySelectorAll('.modal').forEach(modal => {
+            modal.style.display = 'none';
+        });
+    }
+    
+    // Ctrl+S لحفظ في النوافذ المفتوحة
+    if (e.ctrlKey && e.key === 's') {
+        e.preventDefault();
+        const visibleModal = document.querySelector('.modal[style*="flex"]');
+        if (visibleModal) {
+            const saveBtn = visibleModal.querySelector('[id$="Btn"]');
+            if (saveBtn && saveBtn.textContent.includes('حفظ')) {
+                saveBtn.click();
+            }
+        }
+    }
+});
+
+// تحسين الأداء - تأخير تحميل البيانات غير الضرورية
+function debounce(func, wait) {
+    let timeout;
+    return function executedFunction(...args) {
+        const later = () => {
+            clearTimeout(timeout);
+            func(...args);
+        };
+        clearTimeout(timeout);
+        timeout = setTimeout(later, wait);
+    };
 }
 
-function editService(id) {
-    alert('تحرير الخدمة سيكون متاحاً في الإصدار القادم');
-}
+// استخدام debounce لتحديث البيانات
+const debouncedLoadData = debounce(loadDashboardData, 300);
 
-function editUser(id) {
-    alert('تحرير المستخدم سيكون متاحاً في الإصدار القادم');
-}
+// إضافة دعم للطباعة
+window.addEventListener('beforeprint', function() {
+    document.querySelectorAll('.modal').forEach(modal => {
+        modal.style.display = 'none';
+    });
+});
+
+// إضافة دعم للتركيز على العناصر التفاعلية
+document.addEventListener('focusin', function(e) {
+    if (e.target.matches('input, textarea, select, button')) {
+        e.target.style.outline = '2px solid var(--secondary-color)';
+        e.target.style.outlineOffset = '2px';
+    }
+});
+
+document.addEventListener('focusout', function(e) {
+    if (e.target.matches('input, textarea, select, button')) {
+        e.target.style.outline = 'none';
+    }
+});

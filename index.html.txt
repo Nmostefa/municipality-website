@@ -1,0 +1,482 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>لوحة تحكم بلدية المدينة</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="css/admin.css">
+</head>
+<body>
+    <!-- Login Page -->
+    <div id="loginPage" class="login-container">
+        <div class="login-form">
+            <div class="login-box">
+                <div class="login-header">
+                    <i class="fas fa-landmark"></i>
+                    <h2>لوحة تحكم البلدية</h2>
+                    <p>يرجى تسجيل الدخول للمتابعة</p>
+                </div>
+                
+                <form id="loginForm">
+                    <div class="form-group">
+                        <label for="username">اسم المستخدم</label>
+                        <input type="text" id="username" class="form-control" required>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="password">كلمة المرور</label>
+                        <input type="password" id="password" class="form-control" required>
+                    </div>
+                    
+                    <button type="submit" class="btn">تسجيل الدخول</button>
+                </form>
+                
+                <div class="login-footer">
+                    <p>بلدية المدينة &copy; 2023</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Dashboard -->
+    <div id="dashboard" class="dashboard-container" style="display: none;">
+        <!-- Sidebar -->
+        <aside class="sidebar">
+            <div class="sidebar-header">
+                <i class="fas fa-landmark"></i>
+                <h2>لوحة التحكم</h2>
+            </div>
+            
+            <ul class="sidebar-menu">
+                <li>
+                    <a href="#" class="active" data-page="dashboard">
+                        <i class="fas fa-tachometer-alt"></i>
+                        <span>الرئيسية</span>
+                    </a>
+                </li>
+                <li>
+                    <a href="#" data-page="news">
+                        <i class="fas fa-newspaper"></i>
+                        <span>إدارة الأخبار</span>
+                    </a>
+                </li>
+                <li>
+                    <a href="#" data-page="projects">
+                        <i class="fas fa-project-diagram"></i>
+                        <span>إدارة المشاريع</span>
+                    </a>
+                </li>
+                <li>
+                    <a href="#" data-page="services">
+                        <i class="fas fa-cogs"></i>
+                        <span>إدارة الخدمات</span>
+                    </a>
+                </li>
+                <li>
+                    <a href="#" data-page="users">
+                        <i class="fas fa-users"></i>
+                        <span>إدارة المستخدمين</span>
+                    </a>
+                </li>
+                <li>
+                    <a href="#" data-page="settings">
+                        <i class="fas fa-cog"></i>
+                        <span>الإعدادات</span>
+                    </a>
+                </li>
+                <li>
+                    <a href="#" id="logoutBtn">
+                        <i class="fas fa-sign-out-alt"></i>
+                        <span>تسجيل الخروج</span>
+                    </a>
+                </li>
+            </ul>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <div class="dashboard-header">
+                <button class="menu-toggle">
+                    <i class="fas fa-bars"></i>
+                </button>
+                <h1>لوحة التحكم</h1>
+                <div class="user-info">
+                    <span>المدير</span>
+                    <i class="fas fa-user-circle" style="font-size: 2rem; color: var(--secondary-color);"></i>
+                </div>
+            </div>
+
+            <!-- Dashboard Overview -->
+            <div id="dashboardContent">
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <div class="stat-icon blue">
+                            <i class="fas fa-newspaper"></i>
+                        </div>
+                        <div class="stat-info">
+                            <h3 id="newsCount">0</h3>
+                            <p>عدد الأخبار</p>
+                        </div>
+                    </div>
+                    
+                    <div class="stat-card">
+                        <div class="stat-icon green">
+                            <i class="fas fa-project-diagram"></i>
+                        </div>
+                        <div class="stat-info">
+                            <h3 id="projectsCount">0</h3>
+                            <p>المشاريع</p>
+                        </div>
+                    </div>
+                    
+                    <div class="stat-card">
+                        <div class="stat-icon orange">
+                            <i class="fas fa-cogs"></i>
+                        </div>
+                        <div class="stat-info">
+                            <h3 id="servicesCount">0</h3>
+                            <p>الخدمات</p>
+                        </div>
+                    </div>
+                    
+                    <div class="stat-card">
+                        <div class="stat-icon red">
+                            <i class="fas fa-users"></i>
+                        </div>
+                        <div class="stat-info">
+                            <h3 id="usersCount">1</h3>
+                            <p>المستخدمون</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="content-section">
+                    <div class="section-header">
+                        <h2>آخر الأخبار</h2>
+                        <a href="#" class="btn" data-page="news">عرض الكل</a>
+                    </div>
+                    
+                    <div class="recent-news" id="recentNews">
+                        <!-- سيتم تحميل الأخبار الحديثة -->
+                    </div>
+                </div>
+            </div>
+
+            <!-- News Management -->
+            <div id="newsContent" style="display: none;">
+                <div class="content-section">
+                    <div class="section-header">
+                        <h2>إدارة الأخبار</h2>
+                        <button class="btn btn-success" id="addNewsBtn">
+                            <i class="fas fa-plus"></i> إضافة خبر جديد
+                        </button>
+                    </div>
+                    
+                    <div class="table-container">
+                        <table class="data-table">
+                            <thead>
+                                <tr>
+                                    <th>العنوان</th>
+                                    <th>التاريخ</th>
+                                    <th>الحالة</th>
+                                    <th>الإجراءات</th>
+                                </tr>
+                            </thead>
+                            <tbody id="newsTableBody">
+                                <!-- سيتم تحميل الأخبار ديناميكياً -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Projects Management -->
+            <div id="projectsContent" style="display: none;">
+                <div class="content-section">
+                    <div class="section-header">
+                        <h2>إدارة المشاريع</h2>
+                        <button class="btn btn-success" id="addProjectBtn">
+                            <i class="fas fa-plus"></i> إضافة مشروع جديد
+                        </button>
+                    </div>
+                    
+                    <div class="table-container">
+                        <table class="data-table">
+                            <thead>
+                                <tr>
+                                    <th>اسم المشروع</th>
+                                    <th>نسبة الإنجاز</th>
+                                    <th>الحالة</th>
+                                    <th>الإجراءات</th>
+                                </tr>
+                            </thead>
+                            <tbody id="projectsTableBody">
+                                <!-- سيتم تحميل المشاريع ديناميكياً -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Services Management -->
+            <div id="servicesContent" style="display: none;">
+                <div class="content-section">
+                    <div class="section-header">
+                        <h2>إدارة الخدمات</h2>
+                        <button class="btn btn-success" id="addServiceBtn">
+                            <i class="fas fa-plus"></i> إضافة خدمة جديدة
+                        </button>
+                    </div>
+                    
+                    <div class="table-container">
+                        <table class="data-table">
+                            <thead>
+                                <tr>
+                                    <th>اسم الخدمة</th>
+                                    <th>الفئة</th>
+                                    <th>الإجراءات</th>
+                                </tr>
+                            </thead>
+                            <tbody id="servicesTableBody">
+                                <!-- سيتم تحميل الخدمات ديناميكياً -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Users Management -->
+            <div id="usersContent" style="display: none;">
+                <div class="content-section">
+                    <div class="section-header">
+                        <h2>إدارة المستخدمين</h2>
+                        <button class="btn btn-success" id="addUserBtn">
+                            <i class="fas fa-plus"></i> إضافة مستخدم جديد
+                        </button>
+                    </div>
+                    
+                    <div class="table-container">
+                        <table class="data-table">
+                            <thead>
+                                <tr>
+                                    <th>اسم المستخدم</th>
+                                    <th>البريد الإلكتروني</th>
+                                    <th>الدور</th>
+                                    <th>الإجراءات</th>
+                                </tr>
+                            </thead>
+                            <tbody id="usersTableBody">
+                                <!-- سيتم تحميل المستخدمين ديناميكياً -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Settings -->
+            <div id="settingsContent" style="display: none;">
+                <div class="content-section">
+                    <div class="section-header">
+                        <h2>إعدادات الموقع</h2>
+                    </div>
+                    
+                    <div class="settings-tabs">
+                        <button class="settings-tab active" data-tab="general">عام</button>
+                        <button class="settings-tab" data-tab="appearance">المظهر</button>
+                    </div>
+                    
+                    <div id="generalSettings" class="settings-content active">
+                        <form id="generalSettingsForm">
+                            <div class="form-group">
+                                <label for="siteName">اسم الموقع</label>
+                                <input type="text" id="siteName" class="form-control" value="بلدية المدينة">
+                            </div>
+                            
+                            <div class="form-group">
+                                <label for="adminEmail">بريد الإلكتروني للمدير</label>
+                                <input type="email" id="adminEmail" class="form-control" value="admin@mun.gov.sa">
+                            </div>
+                            
+                            <button type="submit" class="btn">حفظ الإعدادات</button>
+                        </form>
+                    </div>
+                    
+                    <div id="appearanceSettings" class="settings-content">
+                        <form id="appearanceSettingsForm">
+                            <div class="form-group">
+                                <label>لون الموقع الأساسي</label>
+                                <div class="color-picker">
+                                    <div class="color-option selected" style="background-color: #1a5276;" data-color="#1a5276"></div>
+                                    <div class="color-option" style="background-color: #8e44ad;" data-color="#8e44ad"></div>
+                                    <div class="color-option" style="background-color: #2980b9;" data-color="#2980b9"></div>
+                                    <div class="color-option" style="background-color: #27ae60;" data-color="#27ae60"></div>
+                                    <div class="color-option" style="background-color: #f39c12;" data-color="#f39c12"></div>
+                                </div>
+                            </div>
+                            
+                            <button type="submit" class="btn">حفظ الإعدادات</button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- Add News Modal -->
+    <div id="addNewsModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>إضافة خبر جديد</h3>
+                <button class="modal-close">&times;</button>
+            </div>
+            <div class="modal-body">
+                <form id="addNewsForm">
+                    <div class="form-group">
+                        <label for="newsTitle">عنوان الخبر</label>
+                        <input type="text" id="newsTitle" class="form-control" required>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="newsSummary">ملخص الخبر</label>
+                        <textarea id="newsSummary" class="form-control" required></textarea>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="newsStatus">الحالة</label>
+                        <select id="newsStatus" class="form-control">
+                            <option value="published">منشور</option>
+                            <option value="draft">مسودة</option>
+                        </select>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button class="btn" id="cancelNewsBtn">إلغاء</button>
+                <button class="btn btn-success" id="saveNewsBtn">حفظ</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Add Project Modal -->
+    <div id="addProjectModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>إضافة مشروع جديد</h3>
+                <button class="modal-close">&times;</button>
+            </div>
+            <div class="modal-body">
+                <form id="addProjectForm">
+                    <div class="form-group">
+                        <label for="projectName">اسم المشروع</label>
+                        <input type="text" id="projectName" class="form-control" required>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="projectDescription">وصف المشروع</label>
+                        <textarea id="projectDescription" class="form-control" required></textarea>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="projectProgress">نسبة الإنجاز (%)</label>
+                        <input type="number" id="projectProgress" class="form-control" min="0" max="100" required>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="projectStatus">الحالة</label>
+                        <select id="projectStatus" class="form-control">
+                            <option value="planned">مستقبلي</option>
+                            <option value="ongoing">جاري</option>
+                            <option value="completed">مكتمل</option>
+                        </select>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button class="btn" id="cancelProjectBtn">إلغاء</button>
+                <button class="btn btn-success" id="saveProjectBtn">حفظ</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Add Service Modal -->
+    <div id="addServiceModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>إضافة خدمة جديدة</h3>
+                <button class="modal-close">&times;</button>
+            </div>
+            <div class="modal-body">
+                <form id="addServiceForm">
+                    <div class="form-group">
+                        <label for="serviceName">اسم الخدمة</label>
+                        <input type="text" id="serviceName" class="form-control" required>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="serviceDescription">وصف الخدمة</label>
+                        <textarea id="serviceDescription" class="form-control" required></textarea>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="serviceCategory">الفئة</label>
+                        <select id="serviceCategory" class="form-control">
+                            <option value="documents">وثائق</option>
+                            <option value="properties">عقارات</option>
+                            <option value="vehicles">مركبات</option>
+                            <option value="commercial">تجارية</option>
+                        </select>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button class="btn" id="cancelServiceBtn">إلغاء</button>
+                <button class="btn btn-success" id="saveServiceBtn">حفظ</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Add User Modal -->
+    <div id="addUserModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>إضافة مستخدم جديد</h3>
+                <button class="modal-close">&times;</button>
+            </div>
+            <div class="modal-body">
+                <form id="addUserForm">
+                    <div class="form-group">
+                        <label for="userName">اسم المستخدم</label>
+                        <input type="text" id="userName" class="form-control" required>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="userEmail">البريد الإلكتروني</label>
+                        <input type="email" id="userEmail" class="form-control" required>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="userPassword">كلمة المرور</label>
+                        <input type="password" id="userPassword" class="form-control" required>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="userRole">الدور</label>
+                        <select id="userRole" class="form-control">
+                            <option value="admin">مدير النظام</option>
+                            <option value="editor">محرر محتوى</option>
+                            <option value="moderator">مشرف</option>
+                        </select>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button class="btn" id="cancelUserBtn">إلغاء</button>
+                <button class="btn btn-success" id="saveUserBtn">حفظ</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="js/admin.js"></script>
+</body>
+</html>

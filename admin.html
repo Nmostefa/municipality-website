@@ -3,890 +3,1088 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>لوحة تحكم بلدية المدينة</title>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <link rel="stylesheet" href="css/admin.css">
+    <title>لوحة تحكم الإدارة</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <style>
+        /* Global Styles */
+        body {
+            font-family: 'Arial', sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f4f7f6;
+            color: #333;
+            display: flex;
+            min-height: 100vh;
+            overflow-x: hidden; /* Prevent horizontal scroll */
+        }
+
+        /* Login Page Styles */
+        #loginPage {
+            display: flex; /* Will be set to 'none' by JS after login */
+            justify-content: center;
+            align-items: center;
+            width: 100%;
+            height: 100vh;
+            background-color: #e2eafc;
+            position: fixed; /* To cover the entire screen */
+            top: 0;
+            left: 0;
+            z-index: 1000;
+        }
+
+        .login-container {
+            background-color: white;
+            padding: 40px;
+            border-radius: 10px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+            width: 350px;
+            text-align: center;
+        }
+
+        .login-container h2 {
+            margin-bottom: 30px;
+            color: #4a678f;
+        }
+
+        .login-container label {
+            display: block;
+            text-align: right;
+            margin-bottom: 8px;
+            font-weight: bold;
+            color: #555;
+        }
+
+        .login-container input[type="text"],
+        .login-container input[type="password"] {
+            width: calc(100% - 20px);
+            padding: 12px 10px;
+            margin-bottom: 20px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            font-size: 16px;
+        }
+
+        .login-container button {
+            background-color: #007bff;
+            color: white;
+            padding: 12px 25px;
+            border: none;
+            border-radius: 5px;
+            font-size: 18px;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+        }
+
+        .login-container button:hover {
+            background-color: #0056b3;
+        }
+
+        /* Dashboard Layout Styles */
+        #dashboard {
+            display: none; /* Will be set to 'flex' by JS after login */
+            width: 100%;
+            transition: margin-right 0.3s ease;
+        }
+
+        .sidebar {
+            width: 250px;
+            background-color: #2c3e50;
+            color: white;
+            padding: 20px 0;
+            box-shadow: 2px 0 5px rgba(0, 0, 0, 0.1);
+            position: sticky;
+            top: 0;
+            height: 100vh;
+            overflow-y: auto;
+            flex-shrink: 0;
+            transition: transform 0.3s ease;
+            transform: translateX(0); /* For rtl, controls sidebar visibility */
+        }
+
+        body.sidebar-closed .sidebar {
+            transform: translateX(100%); /* For rtl, hides sidebar to the right */
+        }
+
+        body.sidebar-closed #dashboard {
+            margin-right: -250px; /* Adjust main content to compensate */
+        }
+
+        .sidebar-header {
+            text-align: center;
+            padding: 15px 0;
+            margin-bottom: 20px;
+            border-bottom: 1px solid #4a678f;
+        }
+
+        .sidebar-header h1 {
+            margin: 0;
+            font-size: 24px;
+            color: #ecf0f1;
+        }
+
+        .sidebar-menu ul {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+
+        .sidebar-menu li a {
+            display: flex;
+            align-items: center;
+            padding: 12px 20px;
+            color: white;
+            text-decoration: none;
+            font-size: 16px;
+            transition: background-color 0.3s ease;
+        }
+
+        .sidebar-menu li a:hover,
+        .sidebar-menu li a.active {
+            background-color: #34495e;
+            border-right: 4px solid #007bff;
+        }
+
+        .sidebar-menu li a i {
+            margin-left: 10px; /* For RTL */
+            font-size: 18px;
+        }
+
+        .main-content {
+            flex-grow: 1;
+            padding: 30px;
+            background-color: #f4f7f6;
+            transition: margin-right 0.3s ease;
+        }
+
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background-color: white;
+            padding: 20px 30px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+            margin-bottom: 30px;
+        }
+
+        .header h2 {
+            margin: 0;
+            color: #4a678f;
+            font-size: 28px;
+        }
+
+        .user-info {
+            display: flex;
+            align-items: center;
+        }
+
+        .user-info span {
+            margin-left: 10px; /* For RTL */
+            font-weight: bold;
+            color: #555;
+        }
+
+        .user-info i {
+            font-size: 24px;
+            color: #007bff;
+        }
+
+        .menu-toggle {
+            background: none;
+            border: none;
+            color: #333;
+            font-size: 24px;
+            cursor: pointer;
+            margin-right: 20px; /* For RTL */
+            display: none; /* Hidden on large screens, shown on small */
+        }
+
+        /* Dashboard Overview Content */
+        #dashboardContent {
+            display: block; /* Default visible content */
+        }
+
+        .stats-cards {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 25px;
+            margin-bottom: 30px;
+        }
+
+        .card {
+            background-color: white;
+            padding: 25px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.08);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .card-icon {
+            font-size: 40px;
+            color: #007bff;
+        }
+
+        .card-info h3 {
+            margin: 0;
+            font-size: 28px;
+            color: #4a678f;
+        }
+
+        .card-info p {
+            margin: 5px 0 0;
+            color: #777;
+            font-size: 15px;
+        }
+
+        /* General Content Section Styles (for News, Projects, etc.) */
+        .content-section {
+            display: none; /* Hidden by default, shown by JS */
+            background-color: white;
+            padding: 30px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.08);
+            margin-bottom: 30px;
+        }
+
+        .content-section-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 25px;
+            padding-bottom: 15px;
+            border-bottom: 1px solid #eee;
+        }
+
+        .content-section-header h3 {
+            margin: 0;
+            font-size: 24px;
+            color: #4a678f;
+        }
+
+        .add-btn {
+            background-color: #28a745;
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 5px;
+            font-size: 16px;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+        }
+
+        .add-btn:hover {
+            background-color: #218838;
+        }
+
+        /* Table Styles */
+        .data-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+
+        .data-table th,
+        .data-table td {
+            padding: 12px 15px;
+            text-align: right;
+            border-bottom: 1px solid #eee;
+        }
+
+        .data-table th {
+            background-color: #f8f8f8;
+            font-weight: bold;
+            color: #555;
+            text-transform: uppercase;
+        }
+
+        .data-table tr:hover {
+            background-color: #fcfcfc;
+        }
+
+        .action-buttons button {
+            background: none;
+            border: none;
+            color: #007bff;
+            font-size: 18px;
+            cursor: pointer;
+            margin-left: 10px;
+            transition: color 0.3s ease;
+        }
+
+        .action-buttons button:hover {
+            color: #0056b3;
+        }
+
+        .action-buttons button.delete {
+            color: #dc3545;
+        }
+
+        .action-buttons button.delete:hover {
+            color: #c82333;
+        }
+
+        /* Modal Styles */
+        .modal {
+            display: none; /* Hidden by default */
+            position: fixed;
+            z-index: 2000; /* Higher than dashboard */
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            overflow: auto;
+            background-color: rgba(0, 0, 0, 0.6); /* Black w/ opacity */
+            justify-content: center;
+            align-items: center;
+        }
+
+        .modal-content {
+            background-color: #fefefe;
+            margin: auto;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+            width: 500px;
+            max-width: 90%;
+            position: relative;
+        }
+
+        .modal-content h3 {
+            margin-top: 0;
+            margin-bottom: 20px;
+            color: #4a678f;
+            border-bottom: 1px solid #eee;
+            padding-bottom: 15px;
+        }
+
+        .modal-close {
+            color: #aaa;
+            float: left; /* For RTL */
+            font-size: 28px;
+            font-weight: bold;
+            cursor: pointer;
+            position: absolute;
+            top: 15px;
+            left: 20px;
+        }
+
+        .modal-close:hover,
+        .modal-close:focus {
+            color: black;
+            text-decoration: none;
+        }
+
+        .modal-form label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: bold;
+            color: #555;
+        }
+
+        .modal-form input[type="text"],
+        .modal-form textarea,
+        .modal-form input[type="file"] {
+            width: calc(100% - 22px); /* Adjust for padding and border */
+            padding: 10px;
+            margin-bottom: 15px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            font-size: 16px;
+        }
+
+        .modal-form textarea {
+            resize: vertical;
+            min-height: 100px;
+        }
+
+        .modal-actions {
+            text-align: left; /* For RTL */
+            margin-top: 25px;
+            border-top: 1px solid #eee;
+            padding-top: 15px;
+        }
+
+        .modal-actions button {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 5px;
+            font-size: 16px;
+            cursor: pointer;
+            margin-left: 10px; /* For RTL */
+        }
+
+        .modal-actions button.save {
+            background-color: #007bff;
+            color: white;
+        }
+
+        .modal-actions button.save:hover {
+            background-color: #0056b3;
+        }
+
+        .modal-actions button.cancel {
+            background-color: #6c757d;
+            color: white;
+        }
+
+        .modal-actions button.cancel:hover {
+            background-color: #5a6268;
+        }
+
+        /* Settings Page Styles */
+        #settingsContent {
+            display: none;
+        }
+
+        .settings-nav {
+            display: flex;
+            margin-bottom: 25px;
+            border-bottom: 1px solid #eee;
+        }
+
+        .settings-tab {
+            padding: 12px 20px;
+            cursor: pointer;
+            font-weight: bold;
+            color: #666;
+            transition: color 0.3s ease, border-bottom 0.3s ease;
+            border-bottom: 3px solid transparent;
+        }
+
+        .settings-tab:hover {
+            color: #007bff;
+        }
+
+        .settings-tab.active {
+            color: #007bff;
+            border-bottom-color: #007bff;
+        }
+
+        .settings-content {
+            display: none; /* Hidden by default */
+            padding-top: 15px;
+        }
+
+        .settings-content label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: bold;
+            color: #555;
+        }
+
+        .settings-content input[type="text"],
+        .settings-content input[type="email"],
+        .settings-content textarea {
+            width: calc(100% - 22px);
+            padding: 10px;
+            margin-bottom: 15px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            font-size: 16px;
+        }
+
+        .settings-content textarea {
+            min-height: 100px;
+        }
+
+        .settings-content button {
+            background-color: #007bff;
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 5px;
+            font-size: 16px;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+        }
+
+        .settings-content button:hover {
+            background-color: #0056b3;
+        }
+
+        /* Responsive Design (still using media queries, which are CSS) */
+        @media (max-width: 768px) {
+            .sidebar {
+                position: fixed;
+                right: 0; /* For RTL, slide from right */
+                transform: translateX(100%);
+                z-index: 100;
+            }
+
+            body.sidebar-open .sidebar {
+                transform: translateX(0);
+            }
+
+            .menu-toggle {
+                display: block; /* Show menu toggle on smaller screens */
+            }
+
+            #dashboard {
+                margin-right: 0;
+            }
+
+            body.sidebar-open #dashboard {
+                margin-right: 250px; /* Push content when sidebar is open */
+            }
+
+            .main-content {
+                padding: 20px;
+            }
+
+            .header {
+                flex-direction: column;
+                align-items: flex-end; /* Align user info to right */
+            }
+
+            .header h2 {
+                margin-bottom: 10px;
+            }
+
+            .stats-cards {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
 </head>
 <body>
-    <!-- صفحة تسجيل الدخول -->
-    <div id="loginPage" class="login-container">
-        <div class="login-form">
-            <div class="login-box">
-                <div class="login-header">
-                    <i class="fas fa-landmark"></i>
-                    <h2>لوحة تحكم البلدية</h2>
-                    <p>يرجى تسجيل الدخول للمتابعة</p>
-                </div>
-                
-                <form id="loginForm">
-                    <div class="form-group">
-                        <label for="username">اسم المستخدم</label>
-                        <input type="text" id="username" class="form-control" required>
-                    </div>
-                    
-                    <div class="form-group">
-                        <label for="password">كلمة المرور</label>
-                        <input type="password" id="password" class="form-control" required>
-                    </div>
-                    
-                    <div class="login-options">
-                        <div class="remember-me">
-                            <input type="checkbox" id="remember">
-                            <label for="remember">تذكرني</label>
-                        </div>
-                        <a href="#">نسيت كلمة المرور؟</a>
-                    </div>
-                    
-                    <button type="submit" class="btn">تسجيل الدخول</button>
-                </form>
-                
-                <div class="login-footer">
-                    <p>بلدية المدينة &copy; 2023 | <a href="index.html">العودة للموقع الرئيسي</a></p>
-                </div>
-            </div>
+
+    <div id="loginPage">
+        <div class="login-container">
+            <h2>تسجيل الدخول</h2>
+            <form id="loginForm">
+                <label for="username">اسم المستخدم:</label>
+                <input type="text" id="username" name="username" required>
+                <label for="password">كلمة المرور:</label>
+                <input type="password" id="password" name="password" required>
+                <button type="submit">تسجيل الدخول</button>
+            </form>
         </div>
     </div>
 
-    <!-- لوحة التحكم الرئيسية -->
-    <div id="dashboard" class="dashboard-container" style="display: none;">
-        <!-- الشريط الجانبي -->
-        <aside class="sidebar">
+    <div id="dashboard">
+        <div class="sidebar">
             <div class="sidebar-header">
-                <i class="fas fa-landmark"></i>
-                <h2>لوحة التحكم</h2>
-            </div>
-            
-            <ul class="sidebar-menu">
-                <li>
-                    <a href="#" class="active" data-page="dashboard">
-                        <i class="fas fa-tachometer-alt"></i>
-                        <span>الرئيسية</span>
-                    </a>
-                </li>
-                <li>
-                    <a href="#" data-page="news">
-                        <i class="fas fa-newspaper"></i>
-                        <span>إدارة الأخبار</span>
-                        <span class="badge">12</span>
-                    </a>
-                </li>
-                <li>
-                    <a href="#" data-page="projects">
-                        <i class="fas fa-project-diagram"></i>
-                        <span>إدارة المشاريع</span>
-                    </a>
-                </li>
-                <li>
-                    <a href="#" data-page="decisions">
-                        <i class="fas fa-file-contract"></i>
-                        <span>إدارة القرارات</span>
-                    </a>
-                </li>
-                <li>
-                    <a href="#" data-page="services">
-                        <i class="fas fa-cogs"></i>
-                        <span>إدارة الخدمات</span>
-                    </a>
-                </li>
-                <li>
-                    <a href="#" data-page="gallery">
-                        <i class="fas fa-images"></i>
-                        <span>إدارة المعرض</span>
-                    </a>
-                </li>
-                <li>
-                    <a href="#" data-page="users">
-                        <i class="fas fa-users"></i>
-                        <span>إدارة المستخدمين</span>
-                    </a>
-                </li>
-                <li>
-                    <a href="#" data-page="settings">
-                        <i class="fas fa-cog"></i>
-                        <span>الإعدادات</span>
-                    </a>
-                </li>
-                <li>
-                    <a href="#" id="logoutBtn">
-                        <i class="fas fa-sign-out-alt"></i>
-                        <span>تسجيل الخروج</span>
-                    </a>
-                </li>
-            </ul>
-        </aside>
-
-        <!-- المحتوى الرئيسي -->
-        <main class="main-content">
-            <div class="dashboard-header">
-                <button class="menu-toggle">
-                    <i class="fas fa-bars"></i>
-                </button>
                 <h1>لوحة التحكم</h1>
+            </div>
+            <nav class="sidebar-menu">
+                <ul>
+                    <li><a href="#" data-page="dashboard"><i class="fas fa-home"></i> نظرة عامة</a></li>
+                    <li><a href="#" data-page="news"><i class="fas fa-newspaper"></i> إدارة الأخبار</a></li>
+                    <li><a href="#" data-page="projects"><i class="fas fa-project-diagram"></i> إدارة المشاريع</a></li>
+                    <li><a href="#" data-page="decisions"><i class="fas fa-gavel"></i> إدارة القرارات</a></li>
+                    <li><a href="#" data-page="services"><i class="fas fa-concierge-bell"></i> إدارة الخدمات</a></li>
+                    <li><a href="#" data-page="users"><i class="fas fa-users"></i> إدارة المستخدمين</a></li>
+                    <li><a href="#" data-page="settings"><i class="fas fa-cogs"></i> الإعدادات</a></li>
+                    <li><a href="#" id="logoutBtn"><i class="fas fa-sign-out-alt"></i> تسجيل الخروج</a></li>
+                </ul>
+            </nav>
+        </div>
+
+        <div class="main-content">
+            <div class="header">
+                <button class="menu-toggle" aria-label="Toggle Sidebar"><i class="fas fa-bars"></i></button>
+                <h2 id="pageTitle">نظرة عامة</h2>
                 <div class="user-info">
-                    <span>أحمد محمد</span>
-                    <img src="https://randomuser.me/api/portraits/men/32.jpg" alt="المستخدم">
+                    <span>مرحباً، المدير</span>
+                    <i class="fas fa-user-circle"></i>
                 </div>
             </div>
 
-            <!-- نظرة عامة على لوحة التحكم -->
-            <div id="dashboardContent">
-                <div class="stats-grid">
-                    <div class="stat-card">
-                        <div class="stat-icon blue">
-                            <i class="fas fa-newspaper"></i>
+            <div id="dashboardContent" class="content-section">
+                <div class="stats-cards">
+                    <div class="card">
+                        <div class="card-info">
+                            <h3>120</h3>
+                            <p>إجمالي الأخبار</p>
                         </div>
-                        <div class="stat-info">
-                            <h3 id="newsCount">24</h3>
-                            <p>عدد الأخبار</p>
-                        </div>
+                        <div class="card-icon"><i class="fas fa-newspaper"></i></div>
                     </div>
-                    
-                    <div class="stat-card">
-                        <div class="stat-icon green">
-                            <i class="fas fa-project-diagram"></i>
-                        </div>
-                        <div class="stat-info">
-                            <h3 id="projectsCount">12</h3>
+                    <div class="card">
+                        <div class="card-info">
+                            <h3>45</h3>
                             <p>المشاريع النشطة</p>
                         </div>
+                        <div class="card-icon"><i class="fas fa-project-diagram"></i></div>
                     </div>
-                    
-                    <div class="stat-card">
-                        <div class="stat-icon orange">
-                            <i class="fas fa-file-contract"></i>
+                    <div class="card">
+                        <div class="card-info">
+                            <h3>75</h3>
+                            <p>القرارات الصادرة</p>
                         </div>
-                        <div class="stat-info">
-                            <h3 id="decisionsCount">36</h3>
-                            <p>القرارات المنشورة</p>
+                        <div class="card-icon"><i class="fas fa-gavel"></i></div>
+                    </div>
+                    <div class="card">
+                        <div class="card-info">
+                            <h3>30</h3>
+                            <p>الخدمات المتاحة</p>
                         </div>
-                    </div>
-                    
-                    <div class="stat-card">
-                        <div class="stat-icon red">
-                            <i class="fas fa-users"></i>
-                        </div>
-                        <div class="stat-info">
-                            <h3 id="usersCount">5</h3>
-                            <p>المستخدمون</p>
-                        </div>
+                        <div class="card-icon"><i class="fas fa-concierge-bell"></i></div>
                     </div>
                 </div>
-
-                <div class="content-section">
-                    <div class="section-header">
-                        <h2>آخر الأخبار</h2>
-                        <a href="#" class="btn" data-page="news">عرض الكل</a>
-                    </div>
-                    
-                    <table class="data-table">
-                        <thead>
-                            <tr>
-                                <th>العنوان</th>
-                                <th>التاريخ</th>
-                                <th>الحالة</th>
-                                <th>الإجراءات</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <tr>
-                                <td>إعلان عن مسابقة توظيف</td>
-                                <td>2023-05-20</td>
-                                <td><span style="color: var(--success-color);">منشور</span></td>
-                                <td class="actions">
-                                    <a href="#"><i class="fas fa-edit"></i></a>
-                                    <a href="#" class="delete"><i class="fas fa-trash"></i></a>
-                                </td>
-                            </tr>
-                            <tr>
-                                <td>افتتاح مشروع الحديقة العامة</td>
-                                <td>2023-05-18</td>
-                                <td><span style="color: var(--success-color);">منشور</span></td>
-                                <td class="actions">
-                                    <a href="#"><i class="fas fa-edit"></i></a>
-                                    <a href="#" class="delete"><i class="fas fa-trash"></i></a>
-                                </td>
-                            </tr>
-                        </tbody>
-                    </table>
                 </div>
 
-                <div class="content-section">
-                    <div class="section-header">
-                        <h2>المشاريع الجارية</h2>
-                        <a href="#" class="btn" data-page="projects">عرض الكل</a>
-                    </div>
-                    
-                    <table class="data-table">
-                        <thead>
-                            <tr>
-                                <th>اسم المشروع</th>
-                                <th>نسبة الإنجاز</th>
-                                <th>الحالة</th>
-                                <th>الإجراءات</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <tr>
-                                <td>مشروع توسعة المستشفى العام</td>
-                                <td>65%</td>
-                                <td><span style="color: var(--warning-color);">جاري</span></td>
-                                <td class="actions">
-                                    <a href="#"><i class="fas fa-edit"></i></a>
-                                    <a href="#" class="delete"><i class="fas fa-trash"></i></a>
-                                </td>
-                            </tr>
-                            <tr>
-                                <td>مشروع شبكة الصرف الصحي</td>
-                                <td>40%</td>
-                                <td><span style="color: var(--warning-color);">جاري</span></td>
-                                <td class="actions">
-                                    <a href="#"><i class="fas fa-edit"></i></a>
-                                    <a href="#" class="delete"><i class="fas fa-trash"></i></a>
-                                </td>
-                            </tr>
-                        </tbody>
-                    </table>
+            <div id="newsContent" class="content-section">
+                <div class="content-section-header">
+                    <h3>إدارة الأخبار</h3>
+                    <button id="addNewsBtn" class="add-btn"><i class="fas fa-plus"></i> إضافة خبر</button>
+                </div>
+                <table class="data-table" id="newsTable">
+                    <thead>
+                        <tr>
+                            <th>#</th>
+                            <th>العنوان</th>
+                            <th>تاريخ النشر</th>
+                            <th>الإجراءات</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>1</td>
+                            <td>خبر تجريبي 1</td>
+                            <td>2024-07-25</td>
+                            <td class="action-buttons">
+                                <button class="edit-btn"><i class="fas fa-edit"></i></button>
+                                <button class="delete-btn delete"><i class="fas fa-trash"></i></button>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>2</td>
+                            <td>خبر جديد عن مشروع</td>
+                            <td>2024-07-24</td>
+                            <td class="action-buttons">
+                                <button class="edit-btn"><i class="fas fa-edit"></i></button>
+                                <button class="delete-btn delete"><i class="fas fa-trash"></i></button>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <div id="projectsContent" class="content-section">
+                <div class="content-section-header">
+                    <h3>إدارة المشاريع</h3>
+                    <button id="addProjectBtn" class="add-btn"><i class="fas fa-plus"></i> إضافة مشروع</button>
+                </div>
+                <table class="data-table" id="projectsTable">
+                    <thead>
+                        <tr>
+                            <th>#</th>
+                            <th>اسم المشروع</th>
+                            <th>الحالة</th>
+                            <th>تاريخ البدء</th>
+                            <th>الإجراءات</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>1</td>
+                            <td>مشروع تطوير نظام</td>
+                            <td>قيد التنفيذ</td>
+                            <td>2023-01-10</td>
+                            <td class="action-buttons">
+                                <button class="edit-btn"><i class="fas fa-edit"></i></button>
+                                <button class="delete-btn delete"><i class="fas fa-trash"></i></button>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <div id="decisionsContent" class="content-section">
+                <div class="content-section-header">
+                    <h3>إدارة القرارات</h3>
+                    <button id="addDecisionBtn" class="add-btn"><i class="fas fa-plus"></i> إضافة قرار</button>
+                </div>
+                <table class="data-table" id="decisionsTable">
+                    <thead>
+                        <tr>
+                            <th>#</th>
+                            <th>القرار</th>
+                            <th>تاريخ الإصدار</th>
+                            <th>الإجراءات</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>1</td>
+                            <td>قرار رقم 1021</td>
+                            <td>2024-06-15</td>
+                            <td class="action-buttons">
+                                <button class="edit-btn"><i class="fas fa-edit"></i></button>
+                                <button class="delete-btn delete"><i class="fas fa-trash"></i></button>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <div id="servicesContent" class="content-section">
+                <div class="content-section-header">
+                    <h3>إدارة الخدمات</h3>
+                    <button id="addServiceBtn" class="add-btn"><i class="fas fa-plus"></i> إضافة خدمة</button>
+                </div>
+                <table class="data-table" id="servicesTable">
+                    <thead>
+                        <tr>
+                            <th>#</th>
+                            <th>اسم الخدمة</th>
+                            <th>الوصف</th>
+                            <th>الإجراءات</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>1</td>
+                            <td>خدمة الترخيص</td>
+                            <td>تقديم طلبات الترخيص</td>
+                            <td class="action-buttons">
+                                <button class="edit-btn"><i class="fas fa-edit"></i></button>
+                                <button class="delete-btn delete"><i class="fas fa-trash"></i></button>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <div id="usersContent" class="content-section">
+                <div class="content-section-header">
+                    <h3>إدارة المستخدمين</h3>
+                    <button id="addUserBtn" class="add-btn"><i class="fas fa-plus"></i> إضافة مستخدم</button>
+                </div>
+                <table class="data-table" id="usersTable">
+                    <thead>
+                        <tr>
+                            <th>#</th>
+                            <th>اسم المستخدم</th>
+                            <th>الدور</th>
+                            <th>البريد الإلكتروني</th>
+                            <th>الإجراءات</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>1</td>
+                            <td>admin_user</td>
+                            <td>مدير</td>
+                            <td>admin@example.com</td>
+                            <td class="action-buttons">
+                                <button class="edit-btn"><i class="fas fa-edit"></i></button>
+                                <button class="delete-btn delete"><i class="fas fa-trash"></i></button>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <div id="settingsContent" class="content-section">
+                <div class="content-section-header">
+                    <h3>الإعدادات</h3>
+                </div>
+                <div class="settings-nav">
+                    <div class="settings-tab active" data-tab="general">إعدادات عامة</div>
+                    <div class="settings-tab" data-tab="appearance">المظهر</div>
+                    <div class="settings-tab" data-tab="security">الأمان</div>
+                </div>
+
+                <div id="generalSettings" class="settings-content">
+                    <h4>الإعدادات العامة</h4>
+                    <form>
+                        <label for="siteName">اسم الموقع:</label>
+                        <input type="text" id="siteName" value="لوحة التحكم">
+                        <label for="adminEmail">بريد المدير:</label>
+                        <input type="email" id="adminEmail" value="admin@domain.com">
+                        <label for="contactInfo">معلومات الاتصال:</label>
+                        <textarea id="contactInfo">الهاتف: 0123456789&#10;البريد: info@domain.com</textarea>
+                        <button type="submit">حفظ التغييرات</button>
+                    </form>
+                </div>
+
+                <div id="appearanceSettings" class="settings-content">
+                    <h4>إعدادات المظهر</h4>
+                    <form>
+                        <label for="themeColor">لون السمة الرئيسي:</label>
+                        <input type="text" id="themeColor" value="#007bff">
+                        <label for="logoUrl">رابط الشعار:</label>
+                        <input type="text" id="logoUrl" value="/images/logo.png">
+                        <button type="submit">حفظ التغييرات</button>
+                    </form>
+                </div>
+
+                <div id="securitySettings" class="settings-content">
+                    <h4>إعدادات الأمان</h4>
+                    <form>
+                        <label for="enable2FA">تفعيل المصادقة الثنائية:</label>
+                        <input type="checkbox" id="enable2FA">
+                        <br><br>
+                        <label for="passwordPolicy">سياسة كلمة المرور:</label>
+                        <textarea id="passwordPolicy">يجب أن تحتوي على أحرف كبيرة وصغيرة وأرقام ورموز.</textarea>
+                        <button type="submit">حفظ التغييرات</button>
+                    </form>
                 </div>
             </div>
 
-            <!-- إدارة الأخبار -->
-            <div id="newsContent" style="display: none;">
-                <div class="content-section">
-                    <div class="section-header">
-                        <h2>إدارة الأخبار</h2>
-                        <button class="btn btn-success" id="addNewsBtn">
-                            <i class="fas fa-plus"></i> إضافة خبر جديد
-                        </button>
-                    </div>
-                    
-                    <table class="data-table">
-                        <thead>
-                            <tr>
-                                <th>العنوان</th>
-                                <th>الملخص</th>
-                                <th>التاريخ</th>
-                                <th>الحالة</th>
-                                <th>الإجراءات</th>
-                            </tr>
-                        </thead>
-                        <tbody id="newsTableBody">
-                            <tr>
-                                <td>إعلان عن مسابقة توظيف</td>
-                                <td>تعلم بلدية المدينة عن فتح باب التسجيل في مسابقة توظيف...</td>
-                                <td>2023-05-20</td>
-                                <td><span style="color: var(--success-color);">منشور</span></td>
-                                <td class="actions">
-                                    <a href="#"><i class="fas fa-edit"></i></a>
-                                    <a href="#" class="delete"><i class="fas fa-trash"></i></a>
-                                </td>
-                            </tr>
-                            <tr>
-                                <td>افتتاح مشروع الحديقة العامة</td>
-                                <td>تم افتتاح مشروع الحديقة العامة الجديدة في حي النخيل...</td>
-                                <td>2023-05-18</td>
-                                <td><span style="color: var(--success-color);">منشور</span></td>
-                                <td class="actions">
-                                    <a href="#"><i class="fas fa-edit"></i></a>
-                                    <a href="#" class="delete"><i class="fas fa-trash"></i></a>
-                                </td>
-                            </tr>
-                        </tbody>
-                    </table>
-                </div>
-            </div>
-
-            <!-- إدارة المشاريع -->
-            <div id="projectsContent" style="display: none;">
-                <div class="content-section">
-                    <div class="section-header">
-                        <h2>إدارة المشاريع</h2>
-                        <button class="btn btn-success" id="addProjectBtn">
-                            <i class="fas fa-plus"></i> إضافة مشروع جديد
-                        </button>
-                    </div>
-                    
-                    <table class="data-table">
-                        <thead>
-                            <tr>
-                                <th>اسم المشروع</th>
-                                <th>الوصف</th>
-                                <th>نسبة الإنجاز</th>
-                                <th>الحالة</th>
-                                <th>الإجراءات</th>
-                            </tr>
-                        </thead>
-                        <tbody id="projectsTableBody">
-                            <tr>
-                                <td>مشروع تجديد شارع الملك عبدالله</td>
-                                <td>تجديد كامل لشارع الملك عبدالله</td>
-                                <td>100%</td>
-                                <td><span style="color: var(--success-color);">مكتمل</span></td>
-                                <td class="actions">
-                                    <a href="#"><i class="fas fa-edit"></i></a>
-                                    <a href="#" class="delete"><i class="fas fa-trash"></i></a>
-                                </td>
-                            </tr>
-                            <tr>
-                                <td>مشروع توسعة المستشفى العام</td>
-                                <td>إضافة جناح جديد للمستشفى</td>
-                                <td>65%</td>
-                                <td><span style="color: var(--warning-color);">جاري</span></td>
-                                <td class="actions">
-                                    <a href="#"><i class="fas fa-edit"></i></a>
-                                    <a href="#" class="delete"><i class="fas fa-trash"></i></a>
-                                </td>
-                            </tr>
-                        </tbody>
-                    </table>
-                </div>
-            </div>
-
-            <!-- إدارة القرارات -->
-            <div id="decisionsContent" style="display: none;">
-                <div class="content-section">
-                    <div class="section-header">
-                        <h2>إدارة القرارات</h2>
-                        <button class="btn btn-success" id="addDecisionBtn">
-                            <i class="fas fa-plus"></i> إضافة قرار جديد
-                        </button>
-                    </div>
-                    
-                    <table class="data-table">
-                        <thead>
-                            <tr>
-                                <th>رقم القرار</th>
-                                <th>التاريخ</th>
-                                <th>الموضوع</th>
-                                <th>الإجراءات</th>
-                            </tr>
-                        </thead>
-                        <tbody id="decisionsTableBody">
-                            <tr>
-                                <td>2023/05</td>
-                                <td>15/05/2023</td>
-                                <td>الموافقة على مشروع تجديد حديقة الأطفال</td>
-                                <td class="actions">
-                                    <a href="#"><i class="fas fa-edit"></i></a>
-                                    <a href="#"><i class="fas fa-download"></i></a>
-                                    <a href="#" class="delete"><i class="fas fa-trash"></i></a>
-                                </td>
-                            </tr>
-                        </tbody>
-                    </table>
-                </div>
-            </div>
-
-            <!-- إدارة الخدمات -->
-            <div id="servicesContent" style="display: none;">
-                <div class="content-section">
-                    <div class="section-header">
-                        <h2>إدارة الخدمات</h2>
-                        <button class="btn btn-success" id="addServiceBtn">
-                            <i class="fas fa-plus"></i> إضافة خدمة جديدة
-                        </button>
-                    </div>
-                    
-                    <table class="data-table">
-                        <thead>
-                            <tr>
-                                <th>اسم الخدمة</th>
-                                <th>الوصف</th>
-                                <th>الفئة</th>
-                                <th>الإجراءات</th>
-                            </tr>
-                        </thead>
-                        <tbody id="servicesTableBody">
-                            <tr>
-                                <td>وثائق شخصية</td>
-                                <td>استخراج شهادات الميلاد، الوفاة، الزواج</td>
-                                <td>وثائق</td>
-                                <td class="actions">
-                                    <a href="#"><i class="fas fa-edit"></i></a>
-                                    <a href="#" class="delete"><i class="fas fa-trash"></i></a>
-                                </td>
-                            </tr>
-                            <tr>
-                                <td>خدمات عقارية</td>
-                                <td>استخراج وثائق الملكية، صكوك العقار</td>
-                                <td>عقارات</td>
-                                <td class="actions">
-                                    <a href="#"><i class="fas fa-edit"></i></a>
-                                    <a href="#" class="delete"><i class="fas fa-trash"></i></a>
-                                </td>
-                            </tr>
-                        </tbody>
-                    </table>
-                </div>
-            </div>
-
-            <!-- إدارة المعرض -->
-            <div id="galleryContent" style="display: none;">
-                <div class="content-section">
-                    <div class="section-header">
-                        <h2>إدارة المعرض</h2>
-                        <button class="btn btn-success" id="addImageBtn">
-                            <i class="fas fa-plus"></i> إضافة صور جديدة
-                        </button>
-                    </div>
-                    
-                    <div class="gallery-grid">
-                        <div class="gallery-item">
-                            <img src="https://images.unsplash.com/photo-1519501025264-65ba15a82390?ixlib=rb-4.0.3&auto=format&fit=crop&w=1770&q=80" alt="صورة">
-                            <div class="overlay">
-                                <a href="#"><i class="fas fa-edit"></i></a>
-                                <a href="#" class="delete"><i class="fas fa-trash"></i></a>
-                            </div>
-                        </div>
-                        <div class="gallery-item">
-                            <img src="https://images.unsplash.com/photo-1477959858617-67f85cf4f1df?ixlib=rb-4.0.3&auto=format&fit=crop&w=1744&q=80" alt="صورة">
-                            <div class="overlay">
-                                <a href="#"><i class="fas fa-edit"></i></a>
-                                <a href="#" class="delete"><i class="fas fa-trash"></i></a>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <!-- إدارة المستخدمين -->
-            <div id="usersContent" style="display: none;">
-                <div class="content-section">
-                    <div class="section-header">
-                        <h2>إدارة المستخدمين</h2>
-                        <button class="btn btn-success" id="addUserBtn">
-                            <i class="fas fa-plus"></i> إضافة مستخدم جديد
-                        </button>
-                    </div>
-                    
-                    <table class="data-table">
-                        <thead>
-                            <tr>
-                                <th>اسم المستخدم</th>
-                                <th>البريد الإلكتروني</th>
-                                <th>الدور</th>
-                                <th>الحالة</th>
-                                <th>الإجراءات</th>
-                            </tr>
-                        </thead>
-                        <tbody id="usersTableBody">
-                            <tr>
-                                <td>أحمد محمد</td>
-                                <td>ahmed@mun.gov.sa</td>
-                                <td>مدير النظام</td>
-                                <td><span style="color: var(--success-color);">نشط</span></td>
-                                <td class="actions">
-                                    <a href="#"><i class="fas fa-edit"></i></a>
-                                    <a href="#" class="delete"><i class="fas fa-trash"></i></a>
-                                </td>
-                            </tr>
-                            <tr>
-                                <td>فاطمة علي</td>
-                                <td>fatima@mun.gov.sa</td>
-                                <td>محرر محتوى</td>
-                                <td><span style="color: var(--success-color);">نشط</span></td>
-                                <td class="actions">
-                                    <a href="#"><i class="fas fa-edit"></i></a>
-                                    <a href="#" class="delete"><i class="fas fa-trash"></i></a>
-                                </td>
-                            </tr>
-                        </tbody>
-                    </table>
-                </div>
-            </div>
-
-            <!-- الإعدادات -->
-            <div id="settingsContent" style="display: none;">
-                <div class="content-section">
-                    <div class="section-header">
-                        <h2>إعدادات الموقع</h2>
-                    </div>
-                    
-                    <div class="settings-tabs">
-                        <button class="settings-tab active" data-tab="general">عام</button>
-                        <button class="settings-tab" data-tab="appearance">المظهر</button>
-                        <button class="settings-tab" data-tab="notifications">الإشعارات</button>
-                        <button class="settings-tab" data-tab="security">الأمان</button>
-                    </div>
-                    
-                    <!-- الإعدادات العامة -->
-                    <div id="generalSettings" class="settings-content active">
-                        <form>
-                            <div class="form-group">
-                                <label for="siteName">اسم الموقع</label>
-                                <input type="text" id="siteName" class="form-control" value="بلدية المدينة">
-                            </div>
-                            
-                            <div class="form-group">
-                                <label for="siteDescription">وصف الموقع</label>
-                                <textarea id="siteDescription" class="form-control">بوابة بلدية المدينة الإلكترونية</textarea>
-                            </div>
-                            
-                            <div class="form-group">
-                                <label for="adminEmail">بريد الإلكتروني للمدير</label>
-                                <input type="email" id="adminEmail" class="form-control" value="admin@mun.gov.sa">
-                            </div>
-                            
-                            <div class="form-group">
-                                <label for="contactPhone">رقم الهاتف</label>
-                                <input type="text" id="contactPhone" class="form-control" value="0123456789">
-                            </div>
-                            
-                            <button type="submit" class="btn">حفظ الإعدادات</button>
-                        </form>
-                    </div>
-                    
-                    <!-- إعدادات المظهر -->
-                    <div id="appearanceSettings" class="settings-content">
-                        <form>
-                            <div class="form-group">
-                                <label>لون الموقع الأساسي</label>
-                                <div class="color-picker">
-                                    <div class="color-option selected" style="background-color: #1a5276;"></div>
-                                    <div class="color-option" style="background-color: #8e44ad;"></div>
-                                    <div class="color-option" style="background-color: #2980b9;"></div>
-                                    <div class="color-option" style="background-color: #16a085;"></div>
-                                    <div class="color-option" style="background-color: #27ae60;"></div>
-                                    <div class="color-option" style="background-color: #f39c12;"></div>
-                                    <div class="color-option" style="background-color: #d35400;"></div>
-                                    <div class="color-option" style="background-color: #c0392b;"></div>
-                                </div>
-                            </div>
-                            
-                            <div class="form-group">
-                                <label for="logo">شعار الموقع</label>
-                                <div class="file-upload">
-                                    <i class="fas fa-cloud-upload-alt"></i>
-                                    <p>اسحب وأفلت الشعار هنا أو انقر للاختيار</p>
-                                    <input type="file" id="logo">
-                                </div>
-                            </div>
-                            
-                            <button type="submit" class="btn">حفظ الإعدادات</button>
-                        </form>
-                    </div>
-                    
-                    <!-- إعدادات الإشعارات -->
-                    <div id="notificationsSettings" class="settings-content">
-                        <form>
-                            <div class="form-group">
-                                <label>
-                                    <input type="checkbox" checked> تلقي إشعارات عند إضافة تعليقات جديدة
-                                </label>
-                            </div>
-                            
-                            <div class="form-group">
-                                <label>
-                                    <input type="checkbox" checked> تلقي إشعارات عند تسجيل مستخدمين جدد
-                                </label>
-                            </div>
-                            
-                            <div class="form-group">
-                                <label>
-                                    <input type="checkbox"> تلقي إشعارات أسبوعية بتقرير الموقع
-                                </label>
-                            </div>
-                            
-                            <button type="submit" class="btn">حفظ الإعدادات</button>
-                        </form>
-                    </div>
-                    
-                    <!-- إعدادات الأمان -->
-                    <div id="securitySettings" class="settings-content">
-                        <form>
-                            <div class="form-group">
-                                <label for="currentPassword">كلمة المرور الحالية</label>
-                                <input type="password" id="currentPassword" class="form-control">
-                            </div>
-                            
-                            <div class="form-group">
-                                <label for="newPassword">كلمة المرور الجديدة</label>
-                                <input type="password" id="newPassword" class="form-control">
-                            </div>
-                            
-                            <div class="form-group">
-                                <label for="confirmPassword">تأكيد كلمة المرور الجديدة</label>
-                                <input type="password" id="confirmPassword" class="form-control">
-                            </div>
-                            
-                            <div class="form-group">
-                                <label>
-                                    <input type="checkbox"> تفعيل المصادقة الثنائية
-                                </label>
-                            </div>
-                            
-                            <button type="submit" class="btn">تغيير كلمة المرور</button>
-                        </form>
-                    </div>
-                </div>
-            </div>
-        </main>
+        </div>
     </div>
 
-    <!-- نافذة إضافة خبر -->
     <div id="addNewsModal" class="modal">
         <div class="modal-content">
-            <div class="modal-header">
-                <h3>إضافة خبر جديد</h3>
-                <button class="modal-close">&times;</button>
-            </div>
-            <div class="modal-body">
-                <form id="addNewsForm">
-                    <div class="form-group">
-                        <label for="newsTitle">عنوان الخبر</label>
-                        <input type="text" id="newsTitle" class="form-control" required>
-                    </div>
-                    
-                    <div class="form-group">
-                        <label for="newsSummary">ملخص الخبر</label>
-                        <textarea id="newsSummary" class="form-control" required></textarea>
-                    </div>
-                    
-                    <div class="form-group">
-                        <label for="newsContent">محتوى الخبر</label>
-                        <textarea id="newsContent" class="form-control" required></textarea>
-                    </div>
-                    
-                    <div class="form-group">
-                        <label for="newsImage">صورة الخبر</label>
-                        <div class="file-upload">
-                            <i class="fas fa-cloud-upload-alt"></i>
-                            <p>اسحب وأفلت الصورة هنا أو انقر للاختيار</p>
-                            <input type="file" id="newsImage">
-                        </div>
-                    </div>
-                    
-                    <div class="form-group">
-                        <label for="newsStatus">الحالة</label>
-                        <select id="newsStatus" class="form-control">
-                            <option value="draft">مسودة</option>
-                            <option value="published">منشور</option>
-                        </select>
-                    </div>
-                </form>
-            </div>
-            <div class="modal-footer">
-                <button class="btn" id="cancelNewsBtn">إلغاء</button>
-                <button class="btn btn-success" id="saveNewsBtn">حفظ</button>
-            </div>
+            <span class="modal-close">&times;</span>
+            <h3>إضافة خبر جديد</h3>
+            <form id="addNewsForm" class="modal-form">
+                <label for="newsTitle">عنوان الخبر:</label>
+                <input type="text" id="newsTitle" required>
+                <label for="newsDate">تاريخ النشر:</label>
+                <input type="date" id="newsDate" required>
+                <label for="newsContent">محتوى الخبر:</label>
+                <textarea id="newsContent" required></textarea>
+                <label for="newsImage">صورة الخبر:</label>
+                <input type="file" id="newsImage">
+                <div class="modal-actions">
+                    <button type="submit" class="save">حفظ</button>
+                    <button type="button" class="cancel" id="cancelNewsBtn">إلغاء</button>
+                </div>
+            </form>
         </div>
     </div>
 
-    <!-- نافذة إضافة مشروع -->
     <div id="addProjectModal" class="modal">
         <div class="modal-content">
-            <div class="modal-header">
-                <h3>إضافة مشروع جديد</h3>
-                <button class="modal-close">&times;</button>
-            </div>
-            <div class="modal-body">
-                <form id="addProjectForm">
-                    <div class="form-group">
-                        <label for="projectName">اسم المشروع</label>
-                        <input type="text" id="projectName" class="form-control" required>
-                    </div>
-                    
-                    <div class="form-group">
-                        <label for="projectDescription">وصف المشروع</label>
-                        <textarea id="projectDescription" class="form-control" required></textarea>
-                    </div>
-                    
-                    <div class="form-group">
-                        <label for="projectProgress">نسبة الإنجاز (%)</label>
-                        <input type="number" id="projectProgress" class="form-control" min="0" max="100" required>
-                    </div>
-                    
-                    <div class="form-group">
-                        <label for="projectStatus">الحالة</label>
-                        <select id="projectStatus" class="form-control">
-                            <option value="planned">مستقبلي</option>
-                            <option value="ongoing">جاري</option>
-                            <option value="completed">مكتمل</option>
-                        </select>
-                    </div>
-                    
-                    <div class="form-group">
-                        <label for="projectCost">التكلفة</label>
-                        <input type="text" id="projectCost" class="form-control" required>
-                    </div>
-                </form>
-            </div>
-            <div class="modal-footer">
-                <button class="btn" id="cancelProjectBtn">إلغاء</button>
-                <button class="btn btn-success" id="saveProjectBtn">حفظ</button>
-            </div>
+            <span class="modal-close">&times;</span>
+            <h3>إضافة مشروع جديد</h3>
+            <form id="addProjectForm" class="modal-form">
+                <label for="projectName">اسم المشروع:</label>
+                <input type="text" id="projectName" required>
+                <label for="projectStatus">الحالة:</label>
+                <input type="text" id="projectStatus" required>
+                <label for="projectStartDate">تاريخ البدء:</label>
+                <input type="date" id="projectStartDate" required>
+                <label for="projectDescription">وصف المشروع:</label>
+                <textarea id="projectDescription" required></textarea>
+                <div class="modal-actions">
+                    <button type="submit" class="save">حفظ</button>
+                    <button type="button" class="cancel">إلغاء</button>
+                </div>
+            </form>
         </div>
     </div>
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const loginPage = document.getElementById('loginPage');
+            const dashboard = document.getElementById('dashboard');
+            const loginForm = document.getElementById('loginForm');
+            const sidebarLinks = document.querySelectorAll('.sidebar-menu a');
+            const contentSections = document.querySelectorAll('.main-content > .content-section');
+            const pageTitle = document.getElementById('pageTitle');
+            const menuToggle = document.querySelector('.menu-toggle');
+            const body = document.body;
 
-    <!-- نافذة إضافة قرار -->
-    <div id="addDecisionModal" class="modal">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h3>إضافة قرار جديد</h3>
-                <button class="modal-close">&times;</button>
-            </div>
-            <div class="modal-body">
-                <form id="addDecisionForm">
-                    <div class="form-group">
-                        <label for="decisionNumber">رقم القرار</label>
-                        <input type="text" id="decisionNumber" class="form-control" required>
-                    </div>
-                    
-                    <div class="form-group">
-                        <label for="decisionDate">تاريخ القرار</label>
-                        <input type="date" id="decisionDate" class="form-control" required>
-                    </div>
-                    
-                    <div class="form-group">
-                        <label for="decisionSubject">موضوع القرار</label>
-                        <input type="text" id="decisionSubject" class="form-control" required>
-                    </div>
-                    
-                    <div class="form-group">
-                        <label for="decisionFile">ملف القرار (PDF)</label>
-                        <div class="file-upload">
-                            <i class="fas fa-cloud-upload-alt"></i>
-                            <p>اسحب وأفلت الملف هنا أو انقر للاختيار</p>
-                            <input type="file" id="decisionFile" accept=".pdf">
-                        </div>
-                    </div>
-                </form>
-            </div>
-            <div class="modal-footer">
-                <button class="btn" id="cancelDecisionBtn">إلغاء</button>
-                <button class="btn btn-success" id="saveDecisionBtn">حفظ</button>
-            </div>
-        </div>
-    </div>
+            // Initial state: Show login, hide dashboard
+            if (loginPage) loginPage.style.display = 'flex';
+            if (dashboard) dashboard.style.display = 'none';
 
-    <!-- نافذة إضافة خدمة -->
-    <div id="addServiceModal" class="modal">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h3>إضافة خدمة جديدة</h3>
-                <button class="modal-close">&times;</button>
-            </div>
-            <div class="modal-body">
-                <form id="addServiceForm">
-                    <div class="form-group">
-                        <label for="serviceName">اسم الخدمة</label>
-                        <input type="text" id="serviceName" class="form-control" required>
-                    </div>
-                    
-                    <div class="form-group">
-                        <label for="serviceDescription">وصف الخدمة</label>
-                        <textarea id="serviceDescription" class="form-control" required></textarea>
-                    </div>
-                    
-                    <div class="form-group">
-                        <label for="serviceCategory">الفئة</label>
-                        <select id="serviceCategory" class="form-control">
-                            <option value="documents">وثائق</option>
-                            <option value="properties">عقارات</option>
-                            <option value="vehicles">مركبات</option>
-                            <option value="commercial">تجارية</option>
-                        </select>
-                    </div>
-                    
-                    <div class="form-group">
-                        <label for="serviceIcon">أيقونة الخدمة</label>
-                        <select id="serviceIcon" class="form-control">
-                            <option value="fas fa-id-card">بطاقة شخصية</option>
-                            <option value="fas fa-home">عقار</option>
-                            <option value="fas fa-car">مركبة</option>
-                            <option value="fas fa-briefcase">تجاري</option>
-                        </select>
-                    </div>
-                </form>
-            </div>
-            <div class="modal-footer">
-                <button class="btn" id="cancelServiceBtn">إلغاء</button>
-                <button class="btn btn-success" id="saveServiceBtn">حفظ</button>
-            </div>
-        </div>
-    </div>
+            // Function to show specific content section and hide others
+            function showContent(contentId) {
+                contentSections.forEach(section => {
+                    section.style.display = 'none';
+                });
+                const targetContent = document.getElementById(contentId);
+                if (targetContent) {
+                    targetContent.style.display = 'block';
+                }
 
-    <!-- نافذة إضافة صور -->
-    <div id="addImageModal" class="modal">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h3>إضافة صور جديدة</h3>
-                <button class="modal-close">&times;</button>
-            </div>
-            <div class="modal-body">
-                <form id="addImageForm">
-                    <div class="form-group">
-                        <label for="imageCategory">الفئة</label>
-                        <select id="imageCategory" class="form-control">
-                            <option value="events">مناسبات</option>
-                            <option value="projects">مشاريع</option>
-                            <option value="activities">أنشطة</option>
-                            <option value="landmarks">معالم</option>
-                        </select>
-                    </div>
-                    
-                    <div class="form-group">
-                        <label>الصور</label>
-                        <div class="file-upload">
-                            <i class="fas fa-cloud-upload-alt"></i>
-                            <p>اسحب وأفلت الصور هنا أو انقر للاختيار (يمكنك اختيار عدة صور)</p>
-                            <input type="file" id="galleryImages" multiple accept="image/*">
-                        </div>
-                    </div>
-                </form>
-            </div>
-            <div class="modal-footer">
-                <button class="btn" id="cancelImageBtn">إلغاء</button>
-                <button class="btn btn-success" id="saveImageBtn">رفع الصور</button>
-            </div>
-        </div>
-    </div>
+                // Update page title
+                const link = document.querySelector(`.sidebar-menu a[data-page="${contentId.replace('Content', '')}"]`);
+                if (link && pageTitle) {
+                    pageTitle.textContent = link.textContent.trim();
+                }
 
-    <!-- نافذة إضافة مستخدم -->
-    <div id="addUserModal" class="modal">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h3>إضافة مستخدم جديد</h3>
-                <button class="modal-close">&times;</button>
-            </div>
-            <div class="modal-body">
-                <form id="addUserForm">
-                    <div class="form-group">
-                        <label for="userName">اسم المستخدم</label>
-                        <input type="text" id="userName" class="form-control" required>
-                    </div>
-                    
-                    <div class="form-group">
-                        <label for="userEmail">البريد الإلكتروني</label>
-                        <input type="email" id="userEmail" class="form-control" required>
-                    </div>
-                    
-                    <div class="form-group">
-                        <label for="userPassword">كلمة المرور</label>
-                        <input type="password" id="userPassword" class="form-control" required>
-                    </div>
-                    
-                    <div class="form-group">
-                        <label for="userRole">الدور</label>
-                        <select id="userRole" class="form-control">
-                            <option value="admin">مدير النظام</option>
-                            <option value="editor">محرر محتوى</option>
-                            <option value="moderator">مشرف</option>
-                        </select>
-                    </div>
-                    
-                    <div class="form-group">
-                        <label>
-                            <input type="checkbox" id="userActive" checked> تفعيل الحساب
-                        </label>
-                    </div>
-                </form>
-            </div>
-            <div class="modal-footer">
-                <button class="btn" id="cancelUserBtn">إلغاء</button>
-                <button class="btn btn-success" id="saveUserBtn">حفظ</button>
-            </div>
-        </div>
-    </div>
+                // Update active class in sidebar menu
+                sidebarLinks.forEach(link => {
+                    link.classList.remove('active');
+                });
+                if (link) {
+                    link.classList.add('active');
+                }
+
+                // Close sidebar on smaller screens after clicking a link
+                if (window.innerWidth <= 768) {
+                    body.classList.remove('sidebar-open');
+                    body.classList.add('sidebar-closed');
+                }
+            }
+
+            // Handle Login Form Submission
+            if (loginForm) {
+                loginForm.addEventListener('submit', (e) => {
+                    e.preventDefault();
+                    const username = document.getElementById('username').value;
+                    const password = document.getElementById('password').value;
+
+                    // Basic client-side validation (for demonstration)
+                    if (username === 'admin' && password === 'admin123') {
+                        alert('تم تسجيل الدخول بنجاح!');
+                        if (loginPage) loginPage.style.display = 'none';
+                        if (dashboard) dashboard.style.display = 'flex';
+                        showContent('dashboardContent'); // Show the default dashboard overview
+                    } else {
+                        alert('اسم المستخدم أو كلمة المرور غير صحيحة.');
+                    }
+                });
+            }
+
+            // Handle sidebar menu clicks
+            sidebarLinks.forEach(link => {
+                link.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    const page = link.getAttribute('data-page');
+                    if (page) {
+                        showContent(page + 'Content');
+                    } else if (link.id === 'logoutBtn') {
+                        alert('تم تسجيل الخروج.');
+                        if (dashboard) dashboard.style.display = 'none';
+                        if (loginPage) loginPage.style.display = 'flex';
+                        window.location.reload(); // Simple reload to reset
+                    }
+                });
+            });
+
+            // Handle settings tabs
+            const settingsTabs = document.querySelectorAll('.settings-tab');
+            const settingsContents = document.querySelectorAll('.settings-content');
+
+            settingsTabs.forEach(tab => {
+                tab.addEventListener('click', () => {
+                    settingsTabs.forEach(t => t.classList.remove('active'));
+                    tab.classList.add('active');
+
+                    settingsContents.forEach(content => content.style.display = 'none');
+                    const targetTabContentId = tab.getAttribute('data-tab') + 'Settings';
+                    const targetTabContent = document.getElementById(targetTabContentId);
+                    if (targetTabContent) {
+                        targetTabContent.style.display = 'block';
+                    }
+                });
+            });
+
+            // Initialize: show general settings tab by default when settings are loaded
+            // This will be called when showContent('settingsContent') is triggered
+            function initializeSettingsTab() {
+                const initialSettingsTab = document.querySelector('.settings-tab[data-tab="general"]');
+                if (initialSettingsTab) {
+                    initialSettingsTab.click();
+                }
+            }
+
+            // Override showContent to handle settings tab initialization
+            const originalShowContent = showContent;
+            showContent = function(contentId) {
+                originalShowContent(contentId);
+                if (contentId === 'settingsContent') {
+                    initializeSettingsTab();
+                }
+            };
+
+            // Modal Logic (simplified - apply to all modals)
+            const allModals = document.querySelectorAll('.modal');
+            const allCloseButtons = document.querySelectorAll('.modal-close, .modal-actions .cancel');
+
+            // Function to open a specific modal
+            function openModal(modalId) {
+                const modal = document.getElementById(modalId);
+                if (modal) {
+                    modal.style.display = 'flex'; // Show as flex to center content
+                }
+            }
+
+            // Function to close all modals
+            function closeAllModals() {
+                allModals.forEach(modal => {
+                    modal.style.display = 'none';
+                });
+            }
+
+            // Event listeners for Add buttons to open specific modals
+            document.getElementById('addNewsBtn').addEventListener('click', () => openModal('addNewsModal'));
+            document.getElementById('addProjectBtn').addEventListener('click', () => openModal('addProjectModal'));
+            // Add similar lines for addDecisionBtn, addServiceBtn, addUserBtn
+
+            // Event listeners for close buttons in modals
+            allCloseButtons.forEach(btn => {
+                btn.addEventListener('click', closeAllModals);
+            });
+
+            // Close modal when clicking outside of modal-content
+            allModals.forEach(modal => {
+                modal.addEventListener('click', (e) => {
+                    if (e.target === modal) {
+                        closeAllModals();
+                    }
+                });
+            });
+
+            // Handle form submissions inside modals (for demonstration)
+            const addNewsForm = document.getElementById('addNewsForm');
+            if (addNewsForm) {
+                addNewsForm.addEventListener('submit', (e) => {
+                    e.preventDefault();
+                    const title = document.getElementById('newsTitle').value;
+                    const date = document.getElementById('newsDate').value;
+                    const content = document.getElementById('newsContent').value;
+                    alert(`تم حفظ الخبر: ${title} بتاريخ ${date}`);
+                    closeAllModals();
+                    // In a real app, send data to backend and update table
+                });
+            }
+
+            const addProjectForm = document.getElementById('addProjectForm');
+            if (addProjectForm) {
+                addProjectForm.addEventListener('submit', (e) => {
+                    e.preventDefault();
+                    const projectName = document.getElementById('projectName').value;
+                    alert(`تم حفظ المشروع: ${projectName}`);
+                    closeAllModals();
+                    // In a real app, send data to backend and update table
+                });
+            }
+            // Add similar submission handlers for other forms
+
+            // Toggle Sidebar for responsive view
+            if (menuToggle) {
+                menuToggle.addEventListener('click', () => {
+                    body.classList.toggle('sidebar-closed');
+                    body.classList.toggle('sidebar-open');
+                });
+            }
+
+            // Set initial state for sidebar on load (if viewport is small)
+            if (window.innerWidth <= 768) {
+                body.classList.add('sidebar-closed');
+            } else {
+                body.classList.remove('sidebar-closed');
+            }
+            // Listen for window resize to adjust sidebar
+            window.addEventListener('resize', () => {
+                if (window.innerWidth <= 768) {
+                    body.classList.add('sidebar-closed');
+                    body.classList.remove('sidebar-open');
+                } else {
+                    body.classList.remove('sidebar-closed');
+                    body.classList.remove('sidebar-open');
+                }
+            });
+
+            // Make sure the dashboard content is shown if we are not on the login page initially
+            // (useful during development after commenting out login form display)
+            // For a production app, this would be handled by successful login.
+            if (dashboard.style.display !== 'none') {
+                showContent('dashboardContent');
+            }
+        });
+    </script>
+</body>
+</html>
 
     <script src="js/admin.js"></script>
 </body>
